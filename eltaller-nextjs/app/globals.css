@@ -1,0 +1,62 @@
+/* Paleta exacta ya aprobada por el cliente en el demo — no cambiar
+   sin confirmar con él primero. */
+:root {
+  --rojo: #C0272D;
+  --rojo-oscuro: #8f1c21;
+  --amarillo: #F4D35E;
+  --amarillo-suave: #FBEFC8;
+  --rosa: #F6C9CE;
+  --rosa-suave: #FBE6E9;
+  --crema: #FFF6F0;
+  --rosa-palido: #FDEEF0;
+  --amarillo-palido: #FDF6DC;
+  --tinta: #241010;
+  --gris: #6b5f5c;
+  --borde: #241010;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background: var(--crema);
+  color: var(--tinta);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: Georgia, 'Times New Roman', serif;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Nota: el resto de las clases visuales (.btn, .card, .product-card, etc.)
+   del demo aprobado se van a ir portando componente por componente en las
+   siguientes sesiones — este archivo es la base de variables y reseteo,
+   no el sitio completo todavía. */
