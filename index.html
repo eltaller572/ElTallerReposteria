@@ -546,7 +546,8 @@
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <div class="logo" onclick="goPage('home')">EL TALLER</div>
+  <!-- DEMO: el logo abre el acceso al panel. Al publicar, volver a onclick="goPage('home')" y dejar el acceso en un lugar discreto (pie de página). -->
+  <div class="logo" role="link" tabindex="0" title="Iniciar sesión" aria-label="Iniciar sesión en el panel" onclick="location.href='admin.html'" onkeydown="if(event.key==='Enter'){location.href='admin.html'}">EL TALLER</div>
   <button class="menu-btn" id="menuBtn" onclick="toggleMenu()"><span></span><span></span><span></span></button>
 </div>
 
