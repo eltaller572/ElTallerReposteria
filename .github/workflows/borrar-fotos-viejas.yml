@@ -1,0 +1,51 @@
+name: Borrar fotos del día viejas
+
+# Todos los días a las 4:00 a.m. (hora de México = 10:00 UTC).
+# Deja las fotos de hoy y de ayer; borra las de antes.
+# Solo toca la carpeta "dia/" del bucket "productos". Nunca borra "menu/".
+on:
+  schedule:
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  limpiar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Borrar carpetas de fotos con más de 2 días
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL}" ] || [ -z "${KEY}" ]; then
+            echo "Faltan los secrets SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY"; exit 1
+          fi
+          LIMITE=$(TZ=America/Mexico_City date -d '1 day ago' +%F)
+          echo "Se conservan las fotos de ${LIMITE} en adelante"
+
+          api() { curl -sS --fail -H "apikey: ${KEY}" -H "Authorization: Bearer ${KEY}" -H "Content-Type: application/json" "$@"; }
+
+          CARPETAS=$(api -X POST "${SUPABASE_URL}/storage/v1/object/list/productos" \
+            -d '{"prefix":"dia/","limit":1000}' | jq -r '.[] | select(.id == null) | .name')
+
+          BORRADAS=0
+          for C in ${CARPETAS}; do
+            if ! [[ "${C}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then continue; fi
+            if [[ "${C}" < "${LIMITE}" ]]; then
+              ARCHIVOS=$(api -X POST "${SUPABASE_URL}/storage/v1/object/list/productos" \
+                -d "{\"prefix\":\"dia/${C}/\",\"limit\":1000}" \
+                | jq -c --arg c "dia/${C}/" '[.[] | select(.id != null) | $c + .name]')
+              N=$(echo "${ARCHIVOS}" | jq 'length')
+              if [ "${N}" -gt 0 ]; then
+                api -X DELETE "${SUPABASE_URL}/storage/v1/object/productos" \
+                  -d "{\"prefixes\":${ARCHIVOS}}" > /dev/null
+                BORRADAS=$((BORRADAS + N))
+                echo "Borradas ${N} fotos de ${C}"
+              fi
+            fi
+          done
+          echo "Total de fotos borradas: ${BORRADAS}"
