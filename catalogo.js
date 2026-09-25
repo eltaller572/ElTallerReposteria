@@ -57,7 +57,7 @@ const stockHoy = [
 
   // --- BEBIDAS Y BOWLS ---
   // --- BEBIDAS Y BOWLS (menú real de Plaza Pascal) ---
-  {cat:"Bebidas y Bowls", sub:"Café caliente", nombre:"Americano", precio:40, precioGrande:50, img:"bebidas-seltzer"},
+  {cat:"Bebidas y Bowls", sub:"Café caliente", nombre:"Americano", precio:40, precioGrande:50},
   {cat:"Bebidas y Bowls", sub:"Café caliente", nombre:"Capuchino", precio:60, precioGrande:70},
   {cat:"Bebidas y Bowls", sub:"Café caliente", nombre:"Latte", precio:65, precioGrande:75},
   {cat:"Bebidas y Bowls", sub:"Café caliente", nombre:"Moka", precio:70, precioGrande:80},
@@ -94,9 +94,9 @@ const stockHoy = [
   {cat:"Bebidas y Bowls", sub:"Extras", nombre:"Scoop de proteína", precio:30},
   {cat:"Bebidas y Bowls", sub:"Extras", nombre:"Espresso sencillo", precio:30},
   {cat:"Bebidas y Bowls", sub:"Extras", nombre:"Espresso doble", precio:30},
-  {cat:"Bebidas y Bowls", sub:"Bowls", nombre:"Açai Bowl", precio:95, desc:"Açaí, plátano y frutos rojos. Coronado con granola y fruta de temporada.", img:"bowl-acai", disp:7},
-  {cat:"Bebidas y Bowls", sub:"Bowls", nombre:"Green Bowl", precio:90, desc:"Matcha, mango, piña, espinaca y plátano.", img:"bowl-green", disp:5},
-  {cat:"Bebidas y Bowls", sub:"Bowls", nombre:"Peanut Bowl", precio:90, desc:"Plátano, espresso, avena, cacao y crema de cacahuate.", img:"bowl-peanut", disp:4},
+  {cat:"Bebidas y Bowls", sub:"Bowls", nombre:"Açai Bowl", precio:95, desc:"Açaí, plátano y frutos rojos. Coronado con granola, plátano y fruta de temporada. Dulce, frutal y súper refrescante.", img:"bowl-acai", disp:7},
+  {cat:"Bebidas y Bowls", sub:"Bowls", nombre:"Green Bowl", precio:90, desc:"Matcha, mango, piña, espinaca y plátano. Decorado con granola, plátano y fruta de temporada. Fresco, ligero y lleno de sabor.", img:"bowl-green", disp:5},
+  {cat:"Bebidas y Bowls", sub:"Bowls", nombre:"Peanut Bowl", precio:90, desc:"Plátano, espresso, avena, cacao y crema de cacahuate. Decorado con granola, plátano y fruta de temporada. Cremoso, chocolatoso y con un toque de café para arrancar el día.", img:"bowl-peanut", disp:4},
 ];
 
 

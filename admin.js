@@ -134,6 +134,64 @@ async function subirFoto(inputId, carpeta){
   return path;
 }
 
+/* ================= Promociones ================= */
+function promoTexto(x){
+  if(!x || !x.promo_tipo) return '';
+  if(x.promo_tipo === 'nxm') return x.promo_n + 'x' + x.promo_m;
+  if(x.promo_tipo === 'porcentaje') return Number(x.promo_valor) + '% de descuento';
+  if(x.promo_tipo === 'precio') return 'Precio especial ' + fm(x.promo_valor);
+  return '';
+}
+/* Descuento de un renglón (igual que en la base de datos, solo para mostrar) */
+function promoDescuento(x, pu, q, tam){
+  if(!x || !x.promo_tipo) return 0;
+  if(x.promo_tipo === 'nxm' && q >= x.promo_n) return pu * (Math.floor(q / x.promo_n) * (x.promo_n - x.promo_m));
+  if(x.promo_tipo === 'porcentaje') return Math.round(pu * q * x.promo_valor) / 100;
+  if(x.promo_tipo === 'precio' && tam !== 'g' && x.promo_valor < pu) return (pu - x.promo_valor) * q;
+  return 0;
+}
+function promoCampos(e){
+  e = e || {};
+  var sel = !e.promo_tipo ? '' : (e.promo_tipo === 'nxm' ? (e.promo_n === 2 && e.promo_m === 1 ? '2x1' : (e.promo_n === 3 && e.promo_m === 2 ? '3x2' : 'nxm')) : e.promo_tipo);
+  var op = [['','Sin promoción'],['2x1','2x1'],['3x2','3x2'],['nxm','Otra: lleva / paga'],['porcentaje','% de descuento'],['precio','Precio especial']];
+  return '<div class="fld"><label for="prT">Promoción</label><select id="prT" data-a="prTipo">' + op.map(function(o){ return '<option value="' + o[0] + '"' + (sel === o[0] ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' +
+    '<div class="note">La caja la aplica sola al cobrar. Aparece anunciada en el sitio.</div></div>' +
+    '<div class="grid2' + (sel === 'nxm' ? '' : ' hidden') + '" id="prNxm"><div class="fld"><label for="prN">Lleva</label><input id="prN" type="number" min="2" max="10" value="' + esc(e.promo_n || 4) + '"></div><div class="fld"><label for="prM">Paga</label><input id="prM" type="number" min="1" max="9" value="' + esc(e.promo_m || 3) + '"></div></div>' +
+    '<div class="fld' + (sel === 'porcentaje' || sel === 'precio' ? '' : ' hidden') + '" id="prVal"><label for="prV" id="prVl">' + (sel === 'precio' ? 'Precio especial' : 'Porcentaje de descuento') + '</label><input id="prV" type="text" inputmode="decimal" value="' + esc(e.promo_valor) + '"></div>';
+}
+function promoTipoCambio(){
+  var v = val('prT'), n = $('prNxm'), w = $('prVal'), l = $('prVl');
+  if(n) n.classList.toggle('hidden', v !== 'nxm');
+  if(w) w.classList.toggle('hidden', !(v === 'porcentaje' || v === 'precio'));
+  if(l) l.textContent = v === 'precio' ? 'Precio especial' : 'Porcentaje de descuento';
+}
+function leerPromo(precio){
+  var v = val('prT');
+  var r = {promo_tipo:null, promo_n:null, promo_m:null, promo_valor:null};
+  if(!v) return r;
+  if(v === '2x1'){ r.promo_tipo = 'nxm'; r.promo_n = 2; r.promo_m = 1; return r; }
+  if(v === '3x2'){ r.promo_tipo = 'nxm'; r.promo_n = 3; r.promo_m = 2; return r; }
+  if(v === 'nxm'){
+    var n = parseInt(val('prN'), 10), m = parseInt(val('prM'), 10);
+    if(!(n >= 2 && n <= 10) || !(m >= 1 && m < n)) throw new Error('En la promoción, "lleva" debe ser mayor que "paga" (por ejemplo, lleva 4 y paga 3).');
+    r.promo_tipo = 'nxm'; r.promo_n = n; r.promo_m = m; return r;
+  }
+  var x = num(val('prV'));
+  if(v === 'porcentaje'){ if(!(x > 0 && x < 100)) throw new Error('El descuento debe ser entre 1 y 99%.'); }
+  if(v === 'precio'){ if(!(x > 0)) throw new Error('Escribe el precio especial.'); if(precio && x >= precio) throw new Error('El precio especial debe ser menor que el precio normal.'); }
+  r.promo_tipo = v; r.promo_valor = x; return r;
+}
+function promoTag(x){
+  var t = promoTexto(x); if(!t) return '';
+  var quien = (S.admin && x.promo_por && S.nom && S.nom[x.promo_por]) ? ' · puesta por ' + S.nom[x.promo_por] : '';
+  return '<span class="tag r">Promo ' + esc(t) + '</span>' + (quien ? ' <span style="font-size:12px">' + esc(quien.slice(3)) + '</span>' : '');
+}
+async function cargarNombres(){
+  if(!S.admin) return;
+  var r = await sb.from('perfiles').select('id,nombre');
+  if(!r.error){ S.nom = {}; (r.data || []).forEach(function(p){ S.nom[p.id] = p.nombre; }); }
+}
+
 /* ================= Sesión ================= */
 async function iniciar(){
   S.hoy = fechaMX();
@@ -327,6 +385,7 @@ async function cargarDia(){
   if(r.error) throw r.error;
   S.dia = r.data || [];
   await cargarCostosOk();
+  await cargarNombres();
 }
 
 function diaForm(p){
@@ -342,6 +401,7 @@ function diaForm(p){
     '<div class="fld"><label for="dDes">Descripción (opcional)</label><input id="dDes" type="text" maxlength="300" value="' + esc(e.descripcion) + '"></div>' +
     '<div class="fld"><label for="dFoto">' + (p && p.foto_path ? 'Cambiar foto' : 'Foto') + ' (opcional)</label><input id="dFoto" type="file" accept="image/*" capture="environment"><div class="note">Se reduce sola antes de subirla. Las fotos del día se borran a los 2 días.</div></div>' +
     (p ? '' : '<div class="fld"><label for="dCos">Costo de materiales por pieza (opcional)</label><input id="dCos" type="text" inputmode="decimal" placeholder="Solo lo ve el Administrador"></div>') +
+    promoCampos(e) +
     '<div class="err-t" id="fErr"></div>' +
     '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="' + (p ? 'diaEdit' : 'diaNuevo') + '"' + (p ? ' data-id="' + p.id + '"' : '') + '>Guardar</button></div></div>';
 }
@@ -360,7 +420,7 @@ function vistaDia(){
   items.forEach(function(p){
     var ago = p.cantidad === 0;
     h += '<div class="row' + (p.disponible ? '' : ' off') + '">' + phHTML(p.nombre, p.foto_path) +
-      '<div class="nm"><b>' + esc(p.nombre) + '</b><small>' + catNombre(p.categoria) + ' · ' + fm(p.precio) + '</small><small>' + costoTag(claveDia(p.nombre)) + '</small></div>' +
+      '<div class="nm"><b>' + esc(p.nombre) + '</b><small>' + catNombre(p.categoria) + ' · ' + fm(p.precio) + '</small><small>' + costoTag(claveDia(p.nombre)) + ' ' + promoTag(p) + '</small></div>' +
       '<div class="ctl">' +
       '<button class="' + (p.disponible ? 'btn-r' : 'btn-o') + '" data-a="diaTog" data-id="' + p.id + '">' + (p.disponible ? 'Disponible' : 'No disponible') + '</button>';
     if(p.disponible){
@@ -369,6 +429,7 @@ function vistaDia(){
         '<button class="st" data-a="diaMas" data-id="' + p.id + '" aria-label="Agregar una pieza">+</button>' +
         (ago ? '<span class="tag r">Agotado</span>' : '<button class="btn-y" data-a="diaAgo" data-id="' + p.id + '">Agotado</button>');
     }
+    if(p.promo_tipo) h += '<button class="btn-o btn-s" data-a="promoOff" data-t="productos_dia" data-id="' + p.id + '">Quitar promo</button>';
     h += '<button class="btn-p btn-s" data-a="abrir" data-k="ed:' + p.id + '">Editar</button>' +
       '<button class="btn-p btn-s" data-a="abrir" data-k="co:' + p.id + '">Costo</button>' +
       '<button class="btn-o btn-s" data-a="abrir" data-k="bo:' + p.id + '">Borrar</button></div>';
@@ -394,9 +455,10 @@ async function diaNuevo(){
   if(!(precio > 0)) throw new Error('Escribe un precio mayor a cero.');
   if(!(cant >= 0)) throw new Error('Escribe cuántas piezas hay hoy.');
   if(costo !== null && (isNaN(costo) || costo < 0)) throw new Error('Costo inválido.');
+  var promo = leerPromo(precio);
   var foto = await subirFoto('dFoto', 'dia/' + S.hoy);
-  var r = await sb.from('productos_dia').insert({fecha:S.hoy, categoria:val('dCat'), nombre:nombre, precio:precio, cantidad:cant,
-    descripcion: val('dDes').trim() || null, foto_path: foto, disponible:true}).select().single();
+  var r = await sb.from('productos_dia').insert(Object.assign({fecha:S.hoy, categoria:val('dCat'), nombre:nombre, precio:precio, cantidad:cant,
+    descripcion: val('dDes').trim() || null, foto_path: foto, disponible:true}, promo)).select().single();
   if(r.error) throw r.error;
   S.dia.push(r.data);
   if(costo !== null){
@@ -410,7 +472,7 @@ async function diaEdit(id){
   var nombre = val('dNom').replace(/\s+/g,' ').trim(), precio = num(val('dPre'));
   if(!nombre) throw new Error('Escribe el nombre.');
   if(!(precio > 0)) throw new Error('Escribe un precio mayor a cero.');
-  var cambios = {categoria:val('dCat'), nombre:nombre, precio:precio, descripcion: val('dDes').trim() || null};
+  var cambios = Object.assign({categoria:val('dCat'), nombre:nombre, precio:precio, descripcion: val('dDes').trim() || null}, leerPromo(precio));
   var foto = await subirFoto('dFoto', 'dia/' + S.hoy);
   if(foto) cambios.foto_path = foto;
   await diaUpdate(id, cambios);
@@ -436,7 +498,8 @@ window.__ET = { sb:sb, S:S, $:$, esc:esc, fm:fm, num:num, val:val, checked:check
   ok:ok, fallo:fallo, subirFoto:subirFoto, costoTag:costoTag, costoForm:costoForm, guardarCosto:guardarCosto,
   cargarCostosOk:cargarCostosOk, claveDia:claveDia, catNombre:catNombre, CAT_DIA:CAT_DIA, pintar:pintar, cargarTab:cargarTab,
   cargarDia:cargarDia, diaPorId:diaPorId, diaUpdate:diaUpdate, diaNuevo:diaNuevo, diaEdit:diaEdit, copiarAyer:copiarAyer,
-  accionLogin:accionLogin, salir:salir, iniciar:iniciar, vistaDia:vistaDia };
+  accionLogin:accionLogin, salir:salir, iniciar:iniciar, vistaDia:vistaDia,
+  promoTexto:promoTexto, promoDescuento:promoDescuento, promoCampos:promoCampos, promoTipoCambio:promoTipoCambio, leerPromo:leerPromo, promoTag:promoTag, cargarNombres:cargarNombres };
 var VISTAS = {}, CARGAS = {};
 window.__ET.VISTAS = VISTAS; window.__ET.CARGAS = CARGAS;
 VISTAS.dia = vistaDia; CARGAS.dia = cargarDia;
@@ -453,6 +516,7 @@ async function cargarMenu(){
   if(r.error) throw r.error;
   S.menu = r.data || [];
   await E.cargarCostosOk();
+  await E.cargarNombres();
 }
 function secciones(){
   var s = []; S.menu.forEach(function(m){ if(s.indexOf(m.seccion) < 0) s.push(m.seccion); }); return s;
@@ -469,6 +533,7 @@ function menuForm(m){
     '</div>' +
     '<div class="fld"><label for="mDes">Descripción (opcional)</label><input id="mDes" type="text" maxlength="300" value="' + esc(e.descripcion) + '"></div>' +
     '<div class="fld"><label for="mFoto">' + (m && m.foto_path ? 'Cambiar foto' : 'Foto') + ' (opcional)</label><input id="mFoto" type="file" accept="image/*"></div>' +
+    E.promoCampos(e) + '<div class="fld"><div class="note">Con "Precio especial", el precio grande no cambia.</div></div>' +
     '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="' + (m ? 'menuEdit' : 'menuNuevo') + '"' + (m ? ' data-id="' + m.id + '"' : '') + '>Guardar</button></div></div>';
 }
 function vistaBebidas(){
@@ -480,8 +545,9 @@ function vistaBebidas(){
     S.menu.filter(function(m){ return m.seccion === sec; }).forEach(function(m){
       var k = 'menu:' + m.id;
       h += '<div class="row' + (m.activo ? '' : ' off') + '">' + E.phHTML(m.nombre, m.foto_path) +
-        '<div class="nm"><b>' + esc(m.nombre) + '</b><small>' + fm(m.precio) + (m.precio_grande ? ' · grande ' + fm(m.precio_grande) : '') + '</small><small>' + E.costoTag(k) + '</small></div>' +
+        '<div class="nm"><b>' + esc(m.nombre) + '</b><small>' + fm(m.precio) + (m.precio_grande ? ' · grande ' + fm(m.precio_grande) : '') + '</small><small>' + E.costoTag(k) + ' ' + E.promoTag(m) + '</small></div>' +
         '<div class="ctl"><button class="' + (m.activo ? 'btn-r' : 'btn-o') + ' btn-s" data-a="menuTog" data-id="' + m.id + '">' + (m.activo ? 'En el menú' : 'Oculto') + '</button>' +
+        (m.promo_tipo ? '<button class="btn-o btn-s" data-a="promoOff" data-t="menu_items" data-id="' + m.id + '">Quitar promo</button>' : '') +
         '<button class="btn-p btn-s" data-a="abrir" data-k="me:' + m.id + '">Editar</button>' +
         '<button class="btn-p btn-s" data-a="abrir" data-k="mc:' + m.id + '">Costo</button></div>';
       if(S.abierto === 'me:' + m.id) h += menuForm(m);
@@ -500,7 +566,7 @@ function menuDatos(){
   if(!nom) throw new Error('Escribe el nombre.');
   if(!(p > 0)) throw new Error('Escribe un precio mayor a cero.');
   if(g !== null && !(g > 0)) throw new Error('El precio grande debe ser mayor a cero o quedar vacío.');
-  return {seccion:sec, nombre:nom, precio:p, precio_grande:g, tipo:val('mTip'), descripcion: val('mDes').trim() || null};
+  return Object.assign({seccion:sec, nombre:nom, precio:p, precio_grande:g, tipo:val('mTip'), descripcion: val('mDes').trim() || null}, E.leerPromo(p));
 }
 async function menuNuevo(){
   var d = menuDatos();
@@ -638,7 +704,9 @@ function precioLinea(l){
   if(!m) return 0;
   return l.tamano === 'g' && m.precio_grande ? m.precio_grande : m.precio;
 }
-function totalTicket(){ return S.ticket.reduce(function(s, l){ return s + precioLinea(l) * l.cantidad; }, 0); }
+function prodLinea(l){ return l.origen === 'dia' ? E.diaPorId(l.id) : S.menu.filter(function(x){ return x.id === l.id; })[0]; }
+function subLinea(l){ var pu = precioLinea(l); return pu * l.cantidad - E.promoDescuento(prodLinea(l), pu, l.cantidad, l.tamano); }
+function totalTicket(){ return S.ticket.reduce(function(s, l){ return s + subLinea(l); }, 0); }
 function vistaCaja(){
   var h = '<h2 style="margin-bottom:12px">Caja</h2>';
   if(S.cerrado) h += '<div class="msg info">El día ya se cerró con el corte de caja. No se pueden registrar más ventas hoy.</div>';
@@ -659,18 +727,18 @@ function prodsHTML(){
     if(!ds.length) return '<div class="empty">No hay productos del día disponibles.</div>';
     ds.forEach(function(p){
       var z = p.cantidad === 0;
-      h += '<button class="pb' + (z ? ' z' : '') + '" data-a="add" data-o="dia" data-id="' + p.id + '"' + (z || S.cerrado ? ' disabled' : '') + '><b>' + esc(p.nombre) + '</b><span class="p">' + fm(p.precio) + '</span><small>' + (z ? 'Agotado' : 'Quedan ' + p.cantidad) + '</small></button>';
+      h += '<button class="pb' + (z ? ' z' : '') + '" data-a="add" data-o="dia" data-id="' + p.id + '"' + (z || S.cerrado ? ' disabled' : '') + '><b>' + esc(p.nombre) + '</b><span class="p">' + fm(p.precio) + '</span>' + (p.promo_tipo ? '<span class="tag r">' + esc(E.promoTexto(p)) + '</span>' : '') + '<small>' + (z ? 'Agotado' : 'Quedan ' + p.cantidad) + '</small></button>';
     });
   } else {
     var ms = S.menu.filter(function(m){ return !q || m.nombre.toLowerCase().indexOf(q) >= 0 || m.seccion.toLowerCase().indexOf(q) >= 0; });
     if(!ms.length) return '<div class="empty">Sin resultados.</div>';
     ms.forEach(function(m){
       if(m.precio_grande){
-        h += '<div class="pb"><b>' + esc(m.nombre) + '</b><small>' + esc(m.seccion) + '</small><div class="pb-sz">' +
+        h += '<div class="pb"><b>' + esc(m.nombre) + '</b><small>' + esc(m.seccion) + '</small>' + (m.promo_tipo ? '<span class="tag r">' + esc(E.promoTexto(m)) + '</span>' : '') + '<div class="pb-sz">' +
           '<button data-a="add" data-o="menu" data-t="ch" data-id="' + m.id + '"' + (S.cerrado ? ' disabled' : '') + '>Ch ' + fm(m.precio) + '</button>' +
           '<button data-a="add" data-o="menu" data-t="g" data-id="' + m.id + '"' + (S.cerrado ? ' disabled' : '') + '>G ' + fm(m.precio_grande) + '</button></div></div>';
       } else {
-        h += '<button class="pb" data-a="add" data-o="menu" data-id="' + m.id + '"' + (S.cerrado || m.precio == null ? ' disabled' : '') + '><b>' + esc(m.nombre) + '</b><span class="p">' + fm(m.precio) + '</span><small>' + esc(m.seccion) + '</small></button>';
+        h += '<button class="pb" data-a="add" data-o="menu" data-id="' + m.id + '"' + (S.cerrado || m.precio == null ? ' disabled' : '') + '><b>' + esc(m.nombre) + '</b><span class="p">' + fm(m.precio) + '</span>' + (m.promo_tipo ? '<span class="tag r">' + esc(E.promoTexto(m)) + '</span>' : '') + '<small>' + esc(m.seccion) + '</small></button>';
       }
     });
   }
@@ -685,7 +753,8 @@ function ticketHTML(){
   var h = '<h3 style="margin-bottom:6px">Ticket</h3>';
   if(!S.ticket.length) h += '<p style="color:#5c4f4c;font-size:14px">Toca un producto para agregarlo.</p>';
   S.ticket.forEach(function(l, i){
-    h += '<div class="tl"><span class="n">' + esc(nombreLinea(l)) + '</span><button data-a="tMenos" data-i="' + i + '" aria-label="Quitar uno">−</button><b>' + l.cantidad + '</b><button data-a="tMas" data-i="' + i + '" aria-label="Agregar uno">+</button><span class="m">' + fm(precioLinea(l) * l.cantidad) + '</span></div>';
+    var pr = prodLinea(l), des = E.promoDescuento(pr, precioLinea(l), l.cantidad, l.tamano);
+    h += '<div class="tl"><span class="n">' + esc(nombreLinea(l)) + (pr && pr.promo_tipo ? '<br><small style="color:#8f1c21">Promo ' + esc(E.promoTexto(pr)) + (des > 0 ? ': −' + fm(des) : ' (aún no aplica)') + '</small>' : '') + '</span><button data-a="tMenos" data-i="' + i + '" aria-label="Quitar uno">−</button><b>' + l.cantidad + '</b><button data-a="tMas" data-i="' + i + '" aria-label="Agregar uno">+</button><span class="m">' + fm(subLinea(l)) + '</span></div>';
   });
   h += '<div class="tot"><span>Total</span><span>' + fm(totalTicket()) + '</span></div>' +
     '<div class="pay">' + [['efectivo','Efectivo'],['tarjeta','Tarjeta'],['transferencia','Transferencia']].map(function(p){
@@ -770,7 +839,7 @@ async function salCobrar(id, metodo){
 
 /* ---------- Ventas de hoy ---------- */
 async function cargarVentas(){
-  var r = await sb.from('ventas').select('*, venta_items(nombre,cantidad,tamano,subtotal)').eq('fecha', S.hoy).order('id', {ascending:false});
+  var r = await sb.from('ventas').select('*, venta_items(nombre,cantidad,tamano,subtotal,promo)').eq('fecha', S.hoy).order('id', {ascending:false});
   if(r.error) throw r.error;
   S.ventas = r.data || [];
   var c = await sb.rpc('et_dia_cerrado', {p_fecha: S.hoy});
@@ -784,7 +853,7 @@ function vistaVentas(){
   if(!S.ventas.length) h += '<div class="empty">Todavía no hay ventas hoy.</div>';
   S.ventas.forEach(function(v){
     var can = v.estado === 'cancelada';
-    var det = v.tipo === 'venta' ? (v.venta_items || []).map(function(i){ return i.cantidad + ' ' + i.nombre + (i.tamano === 'g' ? ' (G)' : i.tamano === 'ch' ? ' (Ch)' : ''); }).join(', ') : TIPO[v.tipo];
+    var det = v.tipo === 'venta' ? (v.venta_items || []).map(function(i){ return i.cantidad + ' ' + i.nombre + (i.tamano === 'g' ? ' (G)' : i.tamano === 'ch' ? ' (Ch)' : '') + (i.promo ? ' [' + i.promo + ']' : ''); }).join(', ') : TIPO[v.tipo];
     h += '<div class="row' + (can ? ' off' : '') + '"><div class="nm"><b>#' + v.id + ' · ' + E.horaMX(v.creada) + ' <span class="tag ' + (can ? 'g' : 'y') + '">' + (can ? 'Cancelada' : 'Cobrada') + '</span></b><small>' + esc(det) + '</small>' +
       (can ? '<small>Motivo: ' + esc(v.motivo_cancel) + '</small>' : '') + '</div>' +
       '<span class="money" style="' + (can ? 'text-decoration:line-through;color:#6b5f5c' : '') + '">' + fm(v.total) + '</span><small>' + esc(v.metodo) + '</small>' +
@@ -907,7 +976,7 @@ async function cargarResumen(){
   var rg = rango();
   S.rg = rg;
   S.rv = await todo(function(){
-    return sb.from('ventas').select('id,fecha,creada,tipo,metodo,total,estado,motivo_cancel,cancelada,creado_por,cancelada_por,venta_items(id,nombre,cantidad,tamano,precio_unit,subtotal,origen,venta_costos(costo_unit))')
+    return sb.from('ventas').select('id,fecha,creada,tipo,metodo,total,estado,motivo_cancel,cancelada,creado_por,cancelada_por,venta_items(id,nombre,cantidad,tamano,precio_unit,subtotal,origen,promo,descuento,venta_costos(costo_unit))')
       .gte('fecha', rg[0]).lte('fecha', rg[1]).order('id');
   });
   var c = await sb.from('cortes').select('*').gte('fecha', rg[0]).lte('fecha', rg[1]).order('fecha', {ascending:false});
@@ -969,6 +1038,10 @@ function vistaResumen(){
   h += '</div>';
   h += '<div class="box"><h3>Cancelaciones (' + R.cancel.length + ')</h3>' + (R.cancel.length ? '<div class="scroll"><table><tr><th>Ticket</th><th>Fecha</th><th>Monto</th><th>Motivo</th><th>Canceló</th></tr>' + R.cancel.slice().reverse().map(function(v){
     return '<tr><td>#' + v.id + '</td><td>' + esc(v.fecha) + ' ' + (v.cancelada ? E.horaMX(v.cancelada) : '') + '</td><td>' + fm(v.total) + '</td><td>' + esc(v.motivo_cancel || '') + '</td><td>' + esc(S.nom[v.cancelada_por] || '') + '</td></tr>'; }).join('') + '</table></div>' : '<div class="empty">Sin cancelaciones.</div>') + '</div>';
+  var promos = {};
+  S.rv.forEach(function(v){ if(v.estado !== 'cobrada') return; (v.venta_items || []).forEach(function(it){ if(it.promo && Number(it.descuento) > 0){ var k = it.nombre + ' · ' + it.promo; promos[k] = promos[k] || {n:0, d:0}; promos[k].n += it.cantidad; promos[k].d += Number(it.descuento); } }); });
+  var pk = Object.keys(promos);
+  h += '<div class="box"><h3>Promociones aplicadas</h3>' + (pk.length ? '<div class="scroll"><table><tr><th>Producto y promoción</th><th>Piezas</th><th>Descuento dado</th></tr>' + pk.map(function(k){ return '<tr><td>' + esc(k) + '</td><td>' + promos[k].n + '</td><td>' + fm(promos[k].d) + '</td></tr>'; }).join('') + '</table></div>' : '<div class="empty">No se aplicaron promociones en este periodo.</div>') + '</div>';
   var fondo = S.ajustes ? S.ajustes.fondo_caja : null;
   h += '<div class="box"><div class="row"><div class="nm"><b>Fondo de caja</b><small>Efectivo con el que abre la caja cada día (se usa en el corte)</small></div><span class="money">' + (fondo == null ? '$0' : fm(fondo)) + '</span><button class="btn-p btn-s" data-a="abrir" data-k="fondo">Cambiar</button></div>' +
     (S.abierto === 'fondo' ? '<div class="inline"><div class="fld"><label for="fnV">Fondo de caja</label><input id="fnV" type="text" inputmode="decimal" value="' + esc(fondo == null ? '' : fondo) + '"></div><div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="fondoOk">Guardar</button></div></div>' : '') + '</div>';
@@ -981,16 +1054,16 @@ function csvCampo(v){
   return '"' + s.replace(/"/g,'""') + '"';
 }
 function excel(){
-  var L = [['Fecha','Hora','Ticket','Tipo','Producto','Tamaño','Cantidad','Precio unitario','Subtotal','Costo unitario','Ganancia','Método de pago','Estado','Motivo cancelación']];
+  var L = [['Fecha','Hora','Ticket','Tipo','Producto','Tamaño','Cantidad','Precio unitario','Promoción','Descuento','Subtotal','Costo unitario','Ganancia','Método de pago','Estado','Motivo cancelación']];
   S.rv.forEach(function(v){
     var base = [v.fecha, E.horaMX(v.creada), v.id, v.tipo];
     var fin = [v.metodo, v.estado, v.motivo_cancel || ''];
     if(v.tipo === 'venta' && (v.venta_items || []).length){
       v.venta_items.forEach(function(it){
         var cu = costoDe(it);
-        L.push(base.concat([it.nombre, it.tamano === 'g' ? 'Grande' : it.tamano === 'ch' ? 'Chico' : '', it.cantidad, it.precio_unit, it.subtotal, cu == null ? '' : cu, cu == null ? '' : (Number(it.subtotal) - cu * it.cantidad).toFixed(2)]).concat(fin));
+        L.push(base.concat([it.nombre, it.tamano === 'g' ? 'Grande' : it.tamano === 'ch' ? 'Chico' : '', it.cantidad, it.precio_unit, it.promo || '', it.descuento || 0, it.subtotal, cu == null ? '' : cu, cu == null ? '' : (Number(it.subtotal) - cu * it.cantidad).toFixed(2)]).concat(fin));
       });
-    } else L.push(base.concat([v.tipo === 'anticipo' ? 'Anticipo de pastel' : 'Saldo de pastel', '', 1, v.total, v.total, '', '']).concat(fin));
+    } else L.push(base.concat([v.tipo === 'anticipo' ? 'Anticipo de pastel' : 'Saldo de pastel', '', 1, v.total, '', 0, v.total, '', '']).concat(fin));
   });
   var txt = '\ufeff' + L.map(function(r){ return r.map(csvCampo).join(','); }).join('\r\n');
   var a = document.createElement('a');
@@ -1040,13 +1113,14 @@ async function cargarHistorial(){
   await nombres();
 }
 var TABLA = {menu_items:'Menú de bebidas', productos_dia:'Menú del día', pastel_opciones:'Pasteles', ajustes:'Ajuste', costos:'Costos'};
-var CAMPO = {precio:'Precio', precio_grande:'Precio grande', costo:'Costo', costo_grande:'Costo grande', valor:'Valor', alta:'Alta', activo:'Visible'};
+var CAMPO = {precio:'Precio', precio_grande:'Precio grande', costo:'Costo', costo_grande:'Costo grande', valor:'Valor', alta:'Alta', activo:'Visible', promo:'Promoción'};
 function vistaHistorial(){
   var h = '<h2 style="margin-bottom:12px">Historial de cambios</h2><div class="box"><div class="scroll"><table><tr><th>Cuándo</th><th>Quién</th><th>Dónde</th><th>Qué</th><th>Cambio</th></tr>';
   if(!S.hist.length) h += '<tr><td colspan="5">Todavía no hay cambios.</td></tr>';
   S.hist.forEach(function(x){
     var cambio;
-    if(x.campo === 'alta') cambio = 'Agregado' + (x.despues != null ? ' con ' + fm(x.despues) : '');
+    if(x.campo === 'promo') cambio = esc(x.detalle || '');
+    else if(x.campo === 'alta') cambio = 'Agregado' + (x.despues != null ? ' con ' + fm(x.despues) : '');
     else if(x.campo === 'activo') cambio = Number(x.despues) === 1 ? 'Se prendió' : 'Se apagó';
     else cambio = fm(x.antes) + ' → ' + fm(x.despues);
     var nomX = {pastel_base:'Precio base del pastel', fondo_caja:'Fondo de caja'}[x.nombre] || x.nombre;
@@ -1153,6 +1227,10 @@ var ACC = {
   diaAgo: function(b){ return correr(null, function(){ return E.diaUpdate(b.getAttribute('data-id'), {cantidad: 0}); }); },
   diaBorrar: function(b){ return correr(b, async function(){ var r = await E.sb.from('productos_dia').delete().eq('id', b.getAttribute('data-id')); if(r.error) throw r.error; S.abierto = null; E.ok('Producto borrado del menú de hoy.'); }, true); },
   copiarAyer: function(b){ return correr(b, E.copiarAyer); },
+  promoOff: function(b){ return correr(b, async function(){
+    var tabla = b.getAttribute('data-t'); if(tabla !== 'productos_dia' && tabla !== 'menu_items') return;
+    var r = await E.sb.from(tabla).update({promo_tipo:null, promo_n:null, promo_m:null, promo_valor:null}).eq('id', b.getAttribute('data-id'));
+    if(r.error) throw r.error; E.ok('Promoción quitada.'); }, true); },
   menuNuevo: function(b){ return correr(b, E.menuNuevo); },
   menuEdit: function(b){ return correr(b, function(){ return E.menuEdit(b.getAttribute('data-id')); }); },
   menuTog: function(b){ return correr(null, function(){ return E.menuTog(b.getAttribute('data-id')); }); },
@@ -1193,6 +1271,7 @@ document.addEventListener('click', function(e){
 });
 document.addEventListener('change', function(e){
   var t = e.target;
+  if(t.id === 'prT'){ E.promoTipoCambio(); return; }
   if(t.getAttribute('data-a') === 'diaQty'){
     var n = parseInt(t.value, 10); if(!(n >= 0)) n = 0;
     correr(null, function(){ return E.diaUpdate(t.getAttribute('data-id'), {cantidad: n}); });
