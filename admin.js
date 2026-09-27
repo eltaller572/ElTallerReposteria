@@ -302,7 +302,7 @@ async function accionLogin(a){
 }
 
 /* ================= Pestañas ================= */
-var TABS_EMP = [['dia','Menú del día'],['bebidas','Menú de bebidas'],['pasteles','Pasteles'],['caja','Caja'],['pedidos','Pedidos'],['ventas','Ventas de hoy'],['corte','Corte']];
+var TABS_EMP = [['dia','Menú del día'],['bebidas','Bebidas y desayunos'],['pasteles','Pasteles'],['caja','Caja'],['pedidos','Pedidos'],['ventas','Ventas de hoy'],['corte','Corte']];
 var TABS_ADM = [['resumen','Resumen']].concat(TABS_EMP).concat([['costos','Costos'],['historial','Historial'],['equipo','Equipo']]);
 
 function pintarBarra(){
@@ -529,7 +529,7 @@ function menuForm(m){
     '<div class="fld"><label for="mNom">Nombre</label><input id="mNom" type="text" maxlength="80" value="' + esc(e.nombre) + '"></div>' +
     '<div class="fld"><label for="mPre">Precio (chico o único)</label><input id="mPre" type="text" inputmode="decimal" value="' + esc(e.precio) + '"></div>' +
     '<div class="fld"><label for="mPg">Precio grande (opcional)</label><input id="mPg" type="text" inputmode="decimal" value="' + esc(e.precio_grande) + '"></div>' +
-    '<div class="fld"><label for="mTip">Tipo</label><select id="mTip"><option value="bebida"' + (e.tipo !== 'bowl' ? ' selected' : '') + '>Bebida</option><option value="bowl"' + (e.tipo === 'bowl' ? ' selected' : '') + '>Bowl</option></select></div>' +
+    '<div class="fld"><label for="mTip">Tipo</label><select id="mTip"><option value="bebida"' + (e.tipo !== 'bowl' && e.tipo !== 'comida' ? ' selected' : '') + '>Bebida</option><option value="bowl"' + (e.tipo === 'bowl' ? ' selected' : '') + '>Bowl</option><option value="comida"' + (e.tipo === 'comida' ? ' selected' : '') + '>Desayuno / comida</option></select></div>' +
     '</div>' +
     '<div class="fld"><label for="mDes">Descripción (opcional)</label><input id="mDes" type="text" maxlength="300" value="' + esc(e.descripcion) + '"></div>' +
     '<div class="fld"><label for="mFoto">' + (m && m.foto_path ? 'Cambiar foto' : 'Foto') + ' (opcional)</label><input id="mFoto" type="file" accept="image/*"></div>' +
@@ -537,8 +537,8 @@ function menuForm(m){
     '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="' + (m ? 'menuEdit' : 'menuNuevo') + '"' + (m ? ' data-id="' + m.id + '"' : '') + '>Guardar</button></div></div>';
 }
 function vistaBebidas(){
-  var h = '<h2 style="margin-bottom:12px">Menú de bebidas</h2>' +
-    '<div class="ctl" style="margin-bottom:14px"><button class="btn-y" data-a="abrir" data-k="nuevoMenu">+ Agregar bebida o bowl</button></div>';
+  var h = '<h2 style="margin-bottom:6px">Bebidas y desayunos</h2><p style="margin:0 0 14px;color:#5c4f4c">Los productos de la sección "Desayunos" aparecen en "Nuestra selección de hoy" del sitio (los que tienen foto). Los demás, en el Menú de bebidas.</p>' +
+    '<div class="ctl" style="margin-bottom:14px"><button class="btn-y" data-a="abrir" data-k="nuevoMenu">+ Agregar producto</button></div>';
   if(S.abierto === 'nuevoMenu') h += menuForm(null);
   secciones().forEach(function(sec){
     h += '<div class="box"><h3>' + esc(sec) + '</h3>';
@@ -562,7 +562,7 @@ function vistaBebidas(){
 function menuDatos(){
   var sec = val('mSec').replace(/\s+/g,' ').trim(), nom = val('mNom').replace(/\s+/g,' ').trim();
   var p = num(val('mPre')), g = val('mPg').trim() === '' ? null : num(val('mPg'));
-  if(!sec) throw new Error('Escribe la sección (por ejemplo: Café caliente).');
+  if(!sec) throw new Error('Escribe la sección (por ejemplo: Café caliente o Desayunos).');
   if(!nom) throw new Error('Escribe el nombre.');
   if(!(p > 0)) throw new Error('Escribe un precio mayor a cero.');
   if(g !== null && !(g > 0)) throw new Error('El precio grande debe ser mayor a cero o quedar vacío.');

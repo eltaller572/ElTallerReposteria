@@ -9,7 +9,7 @@
 <title>Panel · El Taller Repostería</title>
 <style>
   :root{
-    --rojo:#C0272D; --rojo-oscuro:#8f1c21; --amarillo:#F4D35E; --rosa:#F6C9CE;
+    --rojo:#C0272D; --rojo-oscuro:#8f1c21; --amarillo:#FFFAC6; --rosa:#F6C9CE;
     --rosa-suave:#FBE6E9; --crema:#FFF6F0; --tinta:#241010; --gris:#5c4f4c;
   }
   *{box-sizing:border-box;border-radius:0 !important;}
@@ -37,7 +37,7 @@
 
   main{padding:20px 0 60px;}
   .msg{padding:12px 16px;margin-bottom:14px;font-size:14px;}
-  .msg.ok{background:var(--amarillo);}
+  .msg.ok{background:var(--amarillo);border-left:4px solid var(--tinta);}
   .msg.err{background:var(--rojo);color:#fff;}
   .msg.info{background:#fff;border-left:4px solid var(--rojo);}
 
@@ -53,14 +53,14 @@
   .ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 
   .btn-r{background:var(--rojo);color:#fff;}
-  .btn-y{background:var(--amarillo);color:var(--tinta);}
+  .btn-y{background:var(--amarillo);color:var(--tinta);border:1.5px solid var(--tinta);}
   .btn-o{background:#fff;border:1.5px solid var(--tinta);}
   .btn-p{background:var(--rosa);}
   .btn-s{min-height:38px;padding:0 12px;font-size:14px;}
   .st{width:46px;padding:0;background:var(--rojo);color:#fff;font-size:22px;}
   .qty{width:70px;height:44px;text-align:center;font-size:18px;font-weight:700;border:1.5px solid var(--tinta);}
   .tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 8px;background:var(--rosa);}
-  .tag.y{background:var(--amarillo);}
+  .tag.y{background:var(--amarillo);outline:1px solid var(--tinta);outline-offset:-1px;}
   .tag.r{background:var(--rojo);color:#fff;}
   .tag.g{background:#e3dddb;}
   .money{font-family:Georgia,serif;font-weight:700;color:var(--rojo);font-size:18px;}
@@ -100,7 +100,7 @@
   .pb small{color:var(--gris);font-size:12px;}
   .pb.z{background:#f3f0ef;color:#6b5f5c;}
   .pb-sz{display:flex;gap:6px;}
-  .pb-sz button{flex:1;min-height:40px;background:var(--amarillo);font-size:13px;padding:0 6px;}
+  .pb-sz button{flex:1;min-height:40px;background:var(--amarillo);border:1.5px solid var(--tinta);font-size:13px;padding:0 6px;}
   .ticket{background:#fff;border:1px solid var(--rosa);border-top:5px solid var(--amarillo);padding:14px 16px;position:sticky;top:70px;}
   .tl{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--rosa);}
   .tl .n{flex:1;font-size:14px;}
