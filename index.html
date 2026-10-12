@@ -137,6 +137,8 @@
   .add-btns{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
   .add-btn{ flex:1; min-height:44px; background:var(--rojo); color:#fff; border:2px solid var(--tinta); font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; gap:6px; padding:0 8px; }
   .add-btn.y{ background:var(--amarillo); color:var(--tinta); }
+  .add-btn{ white-space:nowrap; } .add-btn svg{ flex:none; }
+  .add-btn.y{ font-size:13px; gap:5px; padding:0 6px; }
   .add-btn:disabled{ background:#e3dddb; color:#5c4f4c; border-color:#b9b0ad; cursor:not-allowed; }
   .add-btn.wa{ background:transparent; color:var(--tinta); }
   .en-bolsa{ font-size:12px; font-weight:700; color:var(--rojo-oscuro); margin-top:6px; }
@@ -283,6 +285,8 @@
 
 
   .stock-subgroup{ margin-bottom:32px; }
+  /* Cada subcategoría ocupa todo el ancho cuando el contenedor también es .grid */
+  .grid > .stock-subgroup{ grid-column:1 / -1; }
   .stock-subhead{
     font-family:Georgia, serif; font-size:17px; color:var(--rojo-oscuro);
     border-bottom:2px solid var(--borde); padding-bottom:8px; margin-bottom:16px;
