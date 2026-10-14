@@ -137,6 +137,10 @@
   .add-btns{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
   .add-btn{ flex:1; min-height:44px; background:var(--rojo); color:#fff; border:2px solid var(--tinta); font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; gap:6px; padding:0 8px; }
   .add-btn.y{ background:var(--amarillo); color:var(--tinta); }
+  .b-acepto{ display:flex; gap:10px; align-items:flex-start; margin:10px 0 4px; font-size:13px; line-height:1.4; cursor:pointer; }
+  .b-acepto input{ width:22px; height:22px; flex:none; margin:0; accent-color:var(--rojo); }
+  .b-acepto a{ color:var(--rojo); text-decoration:underline; }
+  .legal p{ line-height:1.6; }
   .add-btn{ white-space:nowrap; } .add-btn svg{ flex:none; }
   .add-btn.y{ font-size:13px; gap:5px; padding:0 6px; }
   .add-btn:disabled{ background:#e3dddb; color:#5c4f4c; border-color:#b9b0ad; cursor:not-allowed; }
@@ -878,8 +882,8 @@
       </div>
       <div class="grid" id="grid-pasteles"></div>
       <div class="delivery-note">
-        <div class="ico">🛵</div>
-        <p><b>Los pasteles se hacen bajo pedido.</b> Recomendamos apartar con anticipación. Envío a domicilio disponible para pasteles y pedidos especiales, a través de servicios de reparto externos.</p>
+        <div class="ico">🎂</div>
+        <p><b>Los pasteles se hacen bajo pedido.</b> Recomendamos apartar con anticipación. Todos los pedidos se recogen en la sucursal; por ahora no hacemos envíos a domicilio.</p>
       </div>
     </div>
   </section>
@@ -973,7 +977,7 @@
 
       <div class="delivery-note">
         <div class="ico">&#127838;</div>
-        <p><b>Para disfrutar en tienda o para llevar.</b> El men&uacute; del d&iacute;a no aplica para env&iacute;o a domicilio &mdash; ese servicio es solo para pasteles y pedidos especiales.</p>
+        <p><b>Para disfrutar en tienda o para llevar.</b> No hacemos env&iacute;os a domicilio: puedes apartar en l&iacute;nea y recoger en la sucursal.</p>
       </div>
     </div>
   </section>
@@ -1027,15 +1031,75 @@
 <!-- ============================================================ -->
 <div class="page" id="page-privacidad">
   <section class="section no-border">
-    <div class="container" style="max-width:760px;">
-      <div class="eyebrow">Aviso de privacidad simplificado</div>
+    <div class="container legal" style="max-width:780px;">
+      <div class="eyebrow">Aviso de privacidad integral</div>
       <h2 style="margin-bottom:14px;">Tus datos con El Taller</h2>
-      <p style="margin-bottom:12px;"><b>El Taller Repostería &amp; Coffee Bar</b> (Plaza Pascal) es responsable del uso de los datos personales que nos compartes.</p>
-      <p style="margin-bottom:12px;"><b>Qué datos usamos:</b> tu nombre y tu teléfono, solo cuando nos escribes por WhatsApp o haces un pedido o apartado, incluidos los pedidos en línea para recoger en tienda.</p>
-      <p style="margin-bottom:12px;"><b>Para qué:</b> para cotizar, preparar y entregar tu pedido, y para avisarte cuando esté listo. No usamos tus datos para publicidad sin tu permiso y no los vendemos ni compartimos con terceros, salvo que la ley lo exija.</p>
-      <p style="margin-bottom:12px;"><b>Tus derechos:</b> puedes pedirnos ver, corregir o borrar tus datos, u oponerte a su uso, escribiéndonos por WhatsApp al 755 171 2674.</p>
-      <p style="margin-bottom:12px;">Este sitio no usa cookies de rastreo ni publicidad.</p>
-      <p style="margin-bottom:12px;"><b>Pedidos en línea:</b> los pagas al recoger. Tu nombre y teléfono solo los ve el equipo de la sucursal donde recoges, para preparar y entregar tu pedido o avisarte por WhatsApp.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">1. Quién es responsable de tus datos</h3>
+      <p style="margin-bottom:12px;"><b>El Taller Repostería &amp; Coffee Bar</b>, con domicilio en Antonia Nava, Centro, C.P. 40890, Zihuatanejo, Guerrero, México (dentro de Plaza Pascal), es responsable del uso y protección de los datos personales que nos compartes. Contacto: WhatsApp 755 171 2674.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">2. Qué datos usamos</h3>
+      <p style="margin-bottom:12px;">Solo los que nos das tú: <b>nombre</b> y <b>número de WhatsApp</b>. Si encargas un pastel, también la descripción del pastel y la fecha en que lo quieres. No pedimos ni guardamos datos sensibles, datos de tarjetas ni datos bancarios.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">3. Para qué los usamos</h3>
+      <p style="margin-bottom:12px;">Únicamente para: (a) recibir, preparar y entregarte tu pedido o apartado en la sucursal; (b) cotizar pasteles y confirmar contigo los detalles; (c) avisarte por WhatsApp cuando tu pedido esté listo o si hay algún cambio; (d) llevar el registro de ventas y cumplir obligaciones legales y fiscales. Todas estas finalidades son necesarias para atender tu pedido. <b>No usamos tus datos para publicidad ni promociones</b>, y no los vendemos.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">4. Con quién se comparten</h3>
+      <p style="margin-bottom:12px;">No transferimos tus datos a terceros. Para que el sitio funcione usamos proveedores que solo guardan la información por cuenta nuestra (alojamiento de la página y base de datos), y si nos escribes por WhatsApp aplica también la política de esa aplicación. Solo entregaríamos datos a una autoridad cuando la ley nos lo exija.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">5. Cuánto tiempo los guardamos</h3>
+      <p style="margin-bottom:12px;">El nombre y teléfono de los pedidos en línea se borran automáticamente <b>90 días</b> después del pedido; solo queda el registro de la venta sin datos tuyos. Los datos de pasteles por encargo se conservan mientras sean necesarios para el pedido y las obligaciones fiscales.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">6. Lo que se guarda en tu propio teléfono o computadora</h3>
+      <p style="margin-bottom:12px;">Este sitio <b>no usa cookies de rastreo ni de publicidad</b>. Para no preguntarte cada vez, tu navegador recuerda la sucursal que elegiste y, si ya hiciste un pedido, tu nombre y WhatsApp. Esa información se queda en tu dispositivo y la puedes borrar en cualquier momento desde la configuración de tu navegador.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">7. Tus derechos (ARCO) y cómo limitar el uso</h3>
+      <p style="margin-bottom:12px;">Puedes pedirnos <b>acceder</b> a tus datos, <b>rectificarlos</b>, <b>cancelarlos</b> u <b>oponerte</b> a su uso, así como revocar tu consentimiento o limitar su uso. Escríbenos por WhatsApp al 755 171 2674 indicando tu nombre, el número con el que hiciste el pedido y lo que necesitas. Te responderemos en un máximo de 20 días hábiles y, si procede, lo haremos efectivo dentro de los 15 días hábiles siguientes, como marca la ley.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">8. Cambios a este aviso</h3>
+      <p style="margin-bottom:12px;">Cualquier cambio lo publicaremos en esta misma página, con la fecha de actualización.</p>
+
+      <p style="font-size:13px;color:var(--gris);margin-top:22px;">Si consideras que tus derechos no fueron atendidos, puedes acudir a la autoridad en materia de protección de datos personales (Secretaría Anticorrupción y Buen Gobierno). Ley aplicable: Ley Federal de Protección de Datos Personales en Posesión de los Particulares.</p>
+      <p style="font-size:12px;color:var(--gris);">Última actualización: octubre de 2026.</p>
+      <p style="margin-top:14px;"><a href="#" onclick="goPage('terminos'); return false;" style="color:var(--rojo);text-decoration:underline;font-weight:700;">Ver Términos y condiciones</a></p>
+    </div>
+  </section>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE: TÉRMINOS Y CONDICIONES -->
+<!-- ============================================================ -->
+<div class="page" id="page-terminos">
+  <section class="section no-border">
+    <div class="container legal" style="max-width:780px;">
+      <div class="eyebrow">Términos y condiciones</div>
+      <h2 style="margin-bottom:14px;">Cómo funcionan tus pedidos</h2>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">1. Quiénes somos</h3>
+      <p style="margin-bottom:12px;"><b>El Taller Repostería &amp; Coffee Bar</b>. Sucursal Zihuatanejo: Antonia Nava, Centro, C.P. 40890, Zihuatanejo, Guerrero, México (dentro de Plaza Pascal). Dudas, aclaraciones y quejas: WhatsApp 755 171 2674 o directamente en la sucursal. Los datos de cada sucursal están en la sección <a href="#" onclick="goPage('contacto'); return false;" style="color:var(--rojo);text-decoration:underline;">Contacto</a>.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">2. Precios y productos</h3>
+      <p style="margin-bottom:12px;">Los precios están en pesos mexicanos (MXN) e incluyen los impuestos aplicables. Cada sucursal puede tener su propio menú, precios y promociones; se aplican los de la sucursal que elegiste. Las fotos son ilustrativas: al ser productos artesanales, la presentación puede variar ligeramente. Los productos del día están sujetos a existencia.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">3. Pedidos en línea para recoger</h3>
+      <p style="margin-bottom:12px;">Los pedidos en línea son para <b>recoger hoy en la sucursal</b>, en la hora que eliges. <b>No hacemos envíos a domicilio.</b> Al confirmar, apartamos las piezas para ti. El pago se hace <b>al recoger</b>, en efectivo, tarjeta o transferencia. Si no pasas por tu pedido dentro del tiempo de tolerancia después de la hora elegida, se cancela automáticamente y las piezas regresan a la venta, sin ningún cargo para ti. Los desayunos se preparan solo hasta la hora límite que indica la sucursal. Para cuidar el servicio, puede haber un límite de pedidos y piezas por persona; para pedidos grandes escríbenos por WhatsApp.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">4. Pasteles por encargo</h3>
+      <p style="margin-bottom:12px;">El personalizador muestra un <b>precio estimado</b>. El precio final, la fecha y la hora de entrega se confirman <b>por escrito vía WhatsApp</b> antes de empezar tu pastel. Para iniciar la elaboración pedimos un anticipo; el monto del anticipo y la fecha límite para cancelar con devolución te los confirmamos también por escrito antes de que lo pagues. Los pasteles se recogen en la sucursal.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">5. Si algo no está bien</h3>
+      <p style="margin-bottom:12px;">Revisa tu pedido al recogerlo. Si algo no coincide con lo que pediste o tiene algún defecto, avísanos en ese momento o el mismo día por WhatsApp (de ser posible con una foto) y lo resolvemos reponiendo el producto o devolviéndote lo pagado por ese producto.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">6. Alergias</h3>
+      <p style="margin-bottom:12px;">Nuestros productos se elaboran en una cocina donde se usan trigo (gluten), lácteos, huevo, cacahuate, frutos secos (como almendra) y otros ingredientes que pueden causar alergias. Si tienes alguna alergia, avísanos antes de pedir.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">7. Facturas</h3>
+      <p style="margin-bottom:12px;">Si necesitas factura (CFDI), pídela en la sucursal o por WhatsApp, de preferencia el mismo día de tu compra, con tus datos fiscales.</p>
+
+      <h3 style="font-size:18px;margin:22px 0 8px;">8. Tus datos</h3>
+      <p style="margin-bottom:12px;">Usamos tu nombre y WhatsApp solo para atender tu pedido, como explica nuestro <a href="#" onclick="goPage('privacidad'); return false;" style="color:var(--rojo);text-decoration:underline;">Aviso de privacidad</a>.</p>
+
+      <p style="font-size:13px;color:var(--gris);margin-top:22px;">Si no logramos resolver una inconformidad, puedes acudir a la Procuraduría Federal del Consumidor (Profeco): 800 468 8722. Estos términos se rigen por las leyes de México, incluida la Ley Federal de Protección al Consumidor.</p>
       <p style="font-size:12px;color:var(--gris);">Última actualización: octubre de 2026.</p>
     </div>
   </section>
@@ -1044,7 +1108,7 @@
 <footer>
   <div class="foot-logo">EL TALLER</div>
   <div>El Taller Repostería &amp; Coffee Bar · <span id="pieSuc">Plaza Pascal</span></div>
-  <div style="margin-top:8px;"><a href="#" onclick="goPage('privacidad'); return false;" style="color:inherit;text-decoration:underline;">Aviso de privacidad</a></div>
+  <div style="margin-top:8px;"><a href="#" onclick="goPage('privacidad'); return false;" style="color:inherit;text-decoration:underline;">Aviso de privacidad</a> &nbsp;·&nbsp; <a href="#" onclick="goPage('terminos'); return false;" style="color:inherit;text-decoration:underline;">Términos y condiciones</a></div>
 </footer>
 
 <a href="#" class="floating-wa" onclick="cotizarGenerico(); return false;"><svg class="wa-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.47s1.06 2.86 1.21 3.06c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.28.17-1.41-.07-.13-.27-.2-.57-.35zM12.04 2C6.55 2 2.1 6.45 2.1 11.94c0 1.76.46 3.4 1.27 4.83L2 22l5.36-1.4a9.9 9.9 0 004.68 1.19h.01c5.48 0 9.94-4.45 9.94-9.94C21.99 6.45 17.53 2 12.04 2zm0 18.08h-.01a8.25 8.25 0 01-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 01-1.26-4.38c0-4.56 3.71-8.27 8.27-8.27 2.21 0 4.28.86 5.84 2.42a8.2 8.2 0 012.42 5.85c0 4.56-3.71 8.24-8.27 8.24z"/></svg><span>Cotizar</span></a>
@@ -1349,7 +1413,7 @@ function pintarSucursal(){
   const b = document.getElementById('sucBtn');
   b.style.display = SUCS.length > 1 ? '' : 'none';
   document.getElementById('sucNom').textContent = s ? s.nombre : 'Elegir sucursal';
-  document.getElementById('pieSuc').textContent = s ? s.nombre + ((s.direccion || s.ciudad) ? ' · ' + (s.direccion || s.ciudad) : '') : 'Plaza Pascal';
+  document.getElementById('pieSuc').textContent = s ? s.nombre + ((s.direccion || s.ciudad) ? ' · ' + String(s.direccion || s.ciudad).split(' · ')[0] : '') : 'Plaza Pascal';
   WHATSAPP_NUMBER = (s && s.whatsapp) || WHATSAPP_GENERAL;
   const cs = document.getElementById('contactoSucs');
   if(cs) cs.innerHTML = SUCS.map(x => {
@@ -1537,9 +1601,10 @@ function pintarBolsa(){
       <label class="b-pago"><input type="radio" name="bPago" value="tienda" checked><span><b>Pagar al recoger</b><small>Efectivo, tarjeta o transferencia en la tienda</small></span></label>
       <label class="b-pago off" aria-disabled="true"><input type="radio" name="bPago" disabled><span><b>Pagar en línea con tarjeta</b> <span class="b-pron">Próximamente</span><small>Pago seguro con Mercado Pago</small></span></label>
       <label class="b-pago off" aria-disabled="true"><input type="radio" name="bPago" disabled><span><b>Link de pago por WhatsApp</b> <span class="b-pron">Próximamente</span><small>Te mandamos un link para pagar antes de recoger</small></span></label></div>
+    <label class="b-acepto"><input type="checkbox" id="bAcepto"> <span>Acepto los <a href="#" onclick="cerrarBolsa();goPage('terminos');return false;">Términos y condiciones</a> y el <a href="#" onclick="cerrarBolsa();goPage('privacidad');return false;">Aviso de privacidad</a>.</span></label>
     <div class="b-err" id="bErr" role="alert"></div>
     <button class="add-btn" id="bOk" style="width:100%;margin-top:6px;min-height:52px;font-size:16px" onclick="confirmarPedido()">${BOLSA_SVG} Confirmar pedido · $${totalBolsa()}</button>
-    <p style="font-size:12px;color:var(--gris);margin:8px 0 0">Al confirmar, apartamos tus piezas. Si no pasas por ellas, el pedido se cancela solo. Consulta el <a href="#" onclick="cerrarBolsa();goPage('privacidad');return false;" style="color:inherit">aviso de privacidad</a>.</p>
+    <p style="font-size:12px;color:var(--gris);margin:8px 0 0">Al confirmar, apartamos tus piezas y pagas al recoger; si no pasas por ellas, el pedido se cancela solo. <b>Aviso de privacidad simplificado:</b> El Taller Repostería &amp; Coffee Bar (Antonia Nava, Centro, C.P. 40890, Zihuatanejo, Gro.) usa tu nombre y WhatsApp solo para preparar tu pedido y avisarte cuando esté listo; no los usamos para publicidad ni los compartimos. Puedes limitar su uso o pedir que los borremos por WhatsApp al 755 171 2674. <a href="#" onclick="cerrarBolsa();goPage('privacidad');return false;" style="color:inherit">Aviso integral</a>.</p>
     <span style="display:block;text-align:center;margin-top:10px;font-size:13px;text-decoration:underline;cursor:pointer;color:var(--gris)" onclick="vaciarBolsa()">Vaciar pedido</span>`;
   el.innerHTML = h;
   const nG = leer('et_nombre'), tG = leer('et_tel');
@@ -1554,6 +1619,8 @@ async function confirmarPedido(){
   if(tel.length === 12 && tel.indexOf('52') === 0) tel = tel.slice(2);
   if(nom.length < 2){ e.textContent = 'Escribe tu nombre.'; document.getElementById('bNom').focus(); return; }
   if(tel.length !== 10){ e.textContent = 'Escribe un WhatsApp de 10 dígitos.'; document.getElementById('bTel').focus(); return; }
+  const acepto = document.getElementById('bAcepto');
+  if(acepto && !acepto.checked){ e.textContent = 'Para confirmar, acepta los Términos y el Aviso de privacidad.'; acepto.focus(); return; }
   const hora = document.getElementById('bHora').value;
   const recoger = fechaMX() + 'T' + hora + ':00-06:00';      // hora de México (sin horario de verano)
   const items = bolsa.map(l => { const o = {origen:l.origen, id:l.id, cantidad:l.cantidad}; if(l.tamano) o.tamano = l.tamano; return o; });
@@ -1582,7 +1649,7 @@ function avisarPedido(){
 document.addEventListener('keydown', ev => {
   if(ev.key === 'Escape'){ if(document.getElementById('bolsaVelo').classList.contains('on')) cerrarBolsa(); else cerrarSucursal(); }
 });
-document.addEventListener('input', ev => { if(ev.target.id === 'bNom' || ev.target.id === 'bTel'){ const e = document.getElementById('bErr'); if(e) e.textContent = ''; } });
+document.addEventListener('input', ev => { if(ev.target.id === 'bNom' || ev.target.id === 'bTel' || ev.target.id === 'bAcepto'){ const e = document.getElementById('bErr'); if(e) e.textContent = ''; } });
 
 /* ============ DATOS EN VIVO (Supabase) ============ */
 const SB_URL = 'https://kizywhlnahblwhapfznt.supabase.co';
