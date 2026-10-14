@@ -1332,7 +1332,7 @@ function pintarSucursal(){
   const b = document.getElementById('sucBtn');
   b.style.display = SUCS.length > 1 ? '' : 'none';
   document.getElementById('sucNom').textContent = s ? s.nombre : 'Elegir sucursal';
-  document.getElementById('pieSuc').textContent = s ? s.nombre + (s.ciudad ? ', ' + s.ciudad : '') : 'Plaza Pascal';
+  document.getElementById('pieSuc').textContent = s ? s.nombre + ((s.direccion || s.ciudad) ? ' · ' + (s.direccion || s.ciudad) : '') : 'Plaza Pascal';
   WHATSAPP_NUMBER = (s && s.whatsapp) || WHATSAPP_GENERAL;
   document.getElementById('sucOps').innerHTML = SUCS.map(x =>
     `<button class="suc-op ${x.id === SUC ? 'on' : ''}" onclick="elegirSucursal('${esc(x.id)}')"><b>${esc(x.nombre)}</b><span>${esc([x.ciudad, x.direccion].filter(Boolean).join(' · ') || ' ')}</span></button>`).join('');
