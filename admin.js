@@ -245,10 +245,27 @@ async function entrar(){
   S.perfil = p.data;
   if(!S.perfil || !S.perfil.activo){ pintar(); return; }
   S.admin = (S.perfil.rol === 'dueno' || S.perfil.rol === 'developer');
+  if(S.admin && inactivoDemasiado()){ await salir(MSG_INACT); return; }
+  marcarActividad();
   try{ await cargarSucursales(); }catch(e){ fallo(e); }
   S.tab = S.tab || (S.admin ? 'resumen' : 'dia');
   await cargarTab();
 }
+
+/* Administrador: la sesión se cierra sola tras 30 minutos sin usar el panel
+   (en cualquier pestaña). Los empleados en caja no se ven afectados. */
+var INACT_MS = 30 * 60 * 1000;
+var MSG_INACT = 'Por seguridad cerramos tu sesión después de 30 minutos sin actividad.';
+function marcarActividad(){ try{ localStorage.setItem('et_act', String(Date.now())); }catch(e){} }
+function ultimaActividad(){ try{ return Number(localStorage.getItem('et_act')) || 0; }catch(e){ return 0; } }
+function inactivoDemasiado(){ var u = ultimaActividad(); return !!u && Date.now() - u > INACT_MS; }
+(function(){
+  var ult = 0;
+  ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function(ev){
+    document.addEventListener(ev, function(){ var n = Date.now(); if(S.user && n - ult > 15000){ ult = n; marcarActividad(); } }, {passive:true});
+  });
+  setInterval(function(){ if(S.user && S.admin && inactivoDemasiado()) salir(MSG_INACT); }, 60 * 1000);
+})();
 
 async function salir(motivo){
   await sb.auth.signOut();
@@ -294,6 +311,7 @@ async function accionLogin(a){
       if(!e || !p){ S.msg = {t:'err', x:'Escribe tu correo y contraseña.'}; return pintar(); }
       var r = await sb.auth.signInWithPassword({email:e, password:p});
       if(r.error) throw r.error;
+      marcarActividad();
       await entrar(); return;
     }
     if(a === 'alta'){

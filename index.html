@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#C0272D">
 <!-- Mientras el sitio se revisa con el cliente, Google no lo indexa. Al publicarlo con su dominio, borrar la siguiente línea. -->
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -62,6 +63,11 @@
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0; scroll-behavior:smooth;}
+  html{ -webkit-tap-highlight-color:transparent; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  button, a, [onclick], .stock-tab, .option-card{ touch-action:manipulation; }
+  button, .btn, .stock-tab, .add-btn{ -webkit-user-select:none; user-select:none; }
+  .btn:active, .add-btn:active, .product-cta:active, .btn-wa:active, .floating-wa:active{ transform:translate(2px,2px); box-shadow:none; }
+  @media (prefers-reduced-motion: reduce){ html,body{ scroll-behavior:auto; } }
   body{
     font-family:'Helvetica Neue', Arial, sans-serif;
     background:var(--crema);
@@ -80,7 +86,7 @@
     font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:1px;
     background:var(--rojo); color:#fff; transition:transform .15s ease, box-shadow .15s ease;
   }
-  .btn:hover{ transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--tinta); }
+  @media (hover:hover) and (pointer:fine){ .btn:hover{ transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--tinta); } }
   .btn.secondary{ background:transparent; color:#fff; border-color:#fff; }
   .btn.dark{ background:var(--tinta); border-color:var(--tinta); }
   .btn.ghost{ background:transparent; color:var(--rojo); border-color:var(--rojo); }
@@ -270,7 +276,7 @@
     transition:transform .15s ease, box-shadow .15s ease;
   }
   .evento-card.grande{ min-height:320px; }
-  .evento-card:hover{ transform:translate(-3px,-3px); box-shadow:5px 5px 0 var(--tinta); }
+  @media (hover:hover) and (pointer:fine){ .evento-card:hover{ transform:translate(-3px,-3px); box-shadow:5px 5px 0 var(--tinta); } }
   .ev-bg{ position:absolute; inset:0; background-size:cover; background-position:center; }
   .ev-bg::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(143,28,33,.05) 35%, rgba(36,16,16,.82) 100%); }
   .ev-label{ position:relative; z-index:2; padding:18px; color:#fff; width:100%; }
@@ -362,7 +368,7 @@
     background:transparent; color:inherit; border:2px solid currentColor;
     padding:9px 16px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px;
   }
-  .bb-btn:hover{ background:rgba(255,255,255,.15); }
+  @media (hover:hover) and (pointer:fine){ .bb-btn:hover{ background:rgba(255,255,255,.15); } }
 
   /* ===================== HOME: two main paths ===================== */
   .path-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
@@ -373,7 +379,7 @@
     display:flex; align-items:flex-end; cursor:pointer;
     transition:transform .15s ease, box-shadow .15s ease;
   }
-  .path-tile:hover{ transform:translate(-3px,-3px); box-shadow:6px 6px 0 var(--tinta); }
+  @media (hover:hover) and (pointer:fine){ .path-tile:hover{ transform:translate(-3px,-3px); box-shadow:6px 6px 0 var(--tinta); } }
   .path-tile .cat-bg{ position:absolute; inset:0; background-size:cover; background-position:center; }
   .path-tile .cat-bg::after{
     content:""; position:absolute; inset:0;
@@ -416,7 +422,7 @@
     display:flex; align-items:flex-end; cursor:pointer;
     transition:transform .15s ease, box-shadow .15s ease;
   }
-  .cat-tile:hover{ transform:translate(-3px,-3px); box-shadow:5px 5px 0 var(--tinta); }
+  @media (hover:hover) and (pointer:fine){ .cat-tile:hover{ transform:translate(-3px,-3px); box-shadow:5px 5px 0 var(--tinta); } }
   .cat-tile .cat-bg{ position:absolute; inset:0; background-size:cover; background-position:center; }
   .cat-tile .cat-bg::after{
     content:""; position:absolute; inset:0;
@@ -434,7 +440,7 @@
     flex:none; width:220px; border:2px solid var(--borde); background:#fff; cursor:pointer;
     transition:transform .15s ease, box-shadow .15s ease;
   }
-  .sampler-card:hover{ transform:translate(-3px,-3px); box-shadow:5px 5px 0 var(--tinta); }
+  @media (hover:hover) and (pointer:fine){ .sampler-card:hover{ transform:translate(-3px,-3px); box-shadow:5px 5px 0 var(--tinta); } }
   .sampler-img{ aspect-ratio:1/1; background:linear-gradient(160deg, var(--rosa-suave), var(--amarillo-palido)); display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--rojo-oscuro); font-family:Georgia,serif; border-bottom:2px solid var(--borde); }
   .sampler-info{ padding:12px; }
   .sampler-info .tag{ font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--rojo); font-weight:700; }
@@ -452,7 +458,7 @@
   @media (max-width:900px){ .grid{ grid-template-columns:repeat(2,1fr); } }
   @media (max-width:520px){ .grid{ grid-template-columns:1fr; } }
   .product-card{ display:flex; flex-direction:column; overflow:hidden; transition:transform .15s ease, box-shadow .15s ease; }
-  .product-card:hover{ transform:translate(-3px,-3px); box-shadow:5px 5px 0 var(--tinta); }
+  @media (hover:hover) and (pointer:fine){ .product-card:hover{ transform:translate(-3px,-3px); box-shadow:5px 5px 0 var(--tinta); } }
   .product-img{ aspect-ratio:1/1; background:linear-gradient(160deg, var(--rosa-suave), var(--amarillo-palido)); color:rgba(143,28,33,.35); font-size:12px; letter-spacing:1px; text-transform:uppercase; display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--rojo-oscuro); font-family:Georgia,serif; border-bottom:2px solid var(--borde); position:relative; }
   .badge{ position:absolute; top:10px; left:10px; background:var(--tinta); color:#fff; font-size:11px; font-weight:700; padding:4px 9px; text-transform:uppercase; letter-spacing:.5px; }
   .product-info{ padding:16px; flex:1; display:flex; flex-direction:column; gap:6px; }
@@ -460,7 +466,7 @@
   .product-price{ font-size:14px; color:var(--rojo); font-weight:700; }
   .product-desc{ font-size:12.5px; color:var(--gris); flex:1; }
   .product-cta{ margin-top:10px; padding:10px; border:2px solid var(--borde); background:transparent; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
-  .product-cta:hover{ background:var(--tinta); color:#fff; }
+  @media (hover:hover) and (pointer:fine){ .product-cta:hover{ background:var(--tinta); color:#fff; } }
   .stock-tag{ font-size:11.5px; font-weight:700; color:#fff; background:var(--rojo); padding:3px 8px; display:inline-block; }
   .stock-tag.low{ background:var(--tinta); }
 
@@ -498,7 +504,7 @@
   .option-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
   @media (max-width:600px){ .option-grid{ grid-template-columns:repeat(2,1fr); } }
   .option-card{ border:2px solid var(--borde); padding:10px; text-align:center; cursor:pointer; background:#fff; transition:.12s ease; }
-  .option-card:hover{ background:var(--rosa-suave); }
+  @media (hover:hover) and (pointer:fine){ .option-card:hover{ background:var(--rosa-suave); } }
   .option-card.selected{ background:var(--rojo); color:#fff; }
   .option-swatch{
     aspect-ratio:1/1; margin-bottom:8px; border:1px solid rgba(0,0,0,.12);
@@ -511,7 +517,7 @@
   .option-price{ font-size:11px; opacity:.8; margin-top:2px; }
   .field{ margin-bottom:18px; }
   .field label{ display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; color:var(--gris); }
-  .field textarea, .field input[type=date], .field input[type=time]{ width:100%; border:2px solid var(--borde); padding:12px; font-size:14px; font-family:inherit; background:#fff; }
+  .field textarea, .field input[type=date], .field input[type=time]{ width:100%; border:2px solid var(--borde); padding:12px; font-size:16px; font-family:inherit; background:#fff; }
   .field textarea{ min-height:80px; resize:vertical; }
   .upload-box{ border:2px dashed var(--borde); padding:24px; text-align:center; cursor:pointer; font-size:13px; color:var(--gris); background:#fff; }
   .upload-box.has-file{ border-style:solid; color:var(--tinta); font-weight:700; }
@@ -533,7 +539,7 @@
     display:flex; align-items:center; justify-content:center; gap:10px;
     transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
   }
-  .wa-btn:hover{ background:#1ebc59; transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--tinta); }
+  @media (hover:hover) and (pointer:fine){ .wa-btn:hover{ background:#1ebc59; transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--tinta); } }
   .wa-btn:disabled{ background:#c9c9c9; cursor:not-allowed; transform:none; box-shadow:none; }
   .btn-wa{
     display:inline-flex; align-items:center; gap:10px;
@@ -541,14 +547,14 @@
     padding:14px 26px; font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:1px;
     transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
   }
-  .btn-wa:hover{ background:#1ebc59; transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--tinta); }
+  @media (hover:hover) and (pointer:fine){ .btn-wa:hover{ background:#1ebc59; transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--tinta); } }
   .menu-wa{ display:inline-flex; align-items:center; gap:10px; background:#25D366; color:#fff; padding:12px 22px; border:2px solid #fff; font-weight:700; text-transform:uppercase; letter-spacing:1px; font-size:13px; }
 
   /* ===================== Contact page ===================== */
   .contact-band{ background:var(--rosa); padding:60px 0; text-align:center; }
   .contact-band h2{ font-size:30px; color:var(--rojo-oscuro); margin-bottom:10px; }
   .contact-band p{ color:var(--gris); margin-bottom:26px; }
-  #page-contacto .contact-band{ min-height:calc(100vh - 230px); padding:110px 0 60px; }
+  #page-contacto .contact-band{ min-height:calc(100vh - 230px); min-height:calc(100svh - 230px); padding:110px 0 60px; }
   .contacto-sucs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px; max-width:760px; margin:34px auto 0; text-align:left; }
   .contacto-suc{ background:#fff; border:2px solid var(--tinta); box-shadow:4px 4px 0 var(--tinta); padding:18px 18px 16px; }
   .contacto-suc.on{ border-top:6px solid var(--rojo); }
@@ -569,7 +575,7 @@
   }
   .floating-wa .wa-ico{ width:26px; height:26px; }
   .floating-wa span{ white-space:nowrap; }
-  .floating-wa:hover{ transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--tinta); }
+  @media (hover:hover) and (pointer:fine){ .floating-wa:hover{ transform:translate(-2px,-2px); box-shadow:5px 5px 0 var(--tinta); } }
   @media (max-width:600px){ .floating-wa{ padding:0 16px; } .floating-wa span{ display:none; } }
   .toast{ position:fixed; bottom:24px; left:50%; transform:translate(-50%, 20px); background:var(--tinta); color:#fff; padding:14px 22px; font-size:13px; font-weight:700; opacity:0; pointer-events:none; transition:.25s ease; z-index:80; border:2px solid #000; }
   .toast.show{ opacity:1; transform:translate(-50%,0); }
@@ -969,7 +975,7 @@
     <div class="container">
       <div class="stock-bar">
         <span class="live-dot"></span>
-        <div class="txt">Lo que salió del horno hoy &mdash; actualizado <b id="stockUpdated">hoy</b>. Las piezas bajan conforme se venden.</div>
+        <div class="txt">Lo que salió del horno hoy. Las piezas bajan conforme se venden &mdash; actualizado <b id="stockUpdated">hoy</b></div>
       </div>
 
       <div class="stock-tabs" id="stockTabs"></div>
@@ -1200,6 +1206,7 @@ function promoTexto(x){
   if(x.promo_tipo === 'precio') return 'Precio especial $' + Number(x.promo_valor).toLocaleString('es-MX');
   return '';
 }
+function dinero(n){ return '$' + Number(n || 0).toLocaleString('es-MX', {maximumFractionDigits:2}); }
 function precioTxt(p, desde){
   if(p.precio == null) return 'Precio a cotizar';
   return (desde ? 'Desde $' : '$') + Number(p.precio).toLocaleString('es-MX') + ' MXN';
@@ -1222,7 +1229,7 @@ function renderGrid(containerId, items, tipo){
         ${p.diagrama ? `<button class="diagrama-toggle" onclick="this.nextElementSibling.classList.toggle('open')">Ver por dentro ▾</button>
         <div class="diagrama-box"><div class="diagrama-img img-${p.diagrama}"></div></div>` : ""}
         ${tipo==='pastel'
-          ? `<button class="product-cta" onclick="partirDe('${p.nombre.replace(/'/g,"")}')">Pedir o personalizar</button>`
+          ? `<button class="product-cta" data-n="${esc(p.nombre)}" onclick="partirDe(this.dataset.n)">Pedir o personalizar</button>`
           : `<button class="product-cta" onclick="cotizarCard(${CARDS.push(Object.assign({}, p, {cat:tipo})) - 1})">Cotizar</button>`}
       </div>
     </div>
@@ -1428,7 +1435,7 @@ function pintarSucursal(){
     </div>`;
   }).join('');
   document.getElementById('sucOps').innerHTML = SUCS.map(x =>
-    `<button class="suc-op ${x.id === SUC ? 'on' : ''}" onclick="elegirSucursal('${esc(x.id)}')"><b>${esc(x.nombre)}</b><span>${esc([x.ciudad, x.direccion].filter(Boolean).join(' · ') || ' ')}</span></button>`).join('');
+    `<button class="suc-op ${x.id === SUC ? 'on' : ''}" onclick="elegirSucursal('${String(x.id).replace(/[^\w-]/g, '')}')"><b>${esc(x.nombre)}</b><span>${esc([x.ciudad, x.direccion].filter(Boolean).join(' · ') || ' ')}</span></button>`).join('');
 }
 async function iniciarSucursal(){
   if(!SB){ cargarDatosReales(); return; }
@@ -1569,7 +1576,7 @@ function pintarBolsa(){
   let h = `<div class="b-cab"><div><h2 style="font-size:24px">Tu pedido</h2><span style="font-size:13px;color:var(--gris)">${esc(s.nombre || '')} · recoges en tienda</span></div><button class="b-x" onclick="cerrarBolsa()" aria-label="Cerrar">×</button></div>`;
   if(pedidoHecho){
     h += `<div class="b-ok" role="status"><h3 style="margin-bottom:4px">¡Pedido recibido!</h3><span>Tu número de pedido:</span><span class="folio">${esc(pedidoHecho.folio)}</span>
-      <p style="margin:0 0 8px">Recógelo hoy a las <b>${esc(pedidoHecho.hora)}</b> en <b>${esc(s.nombre || '')}</b>. Total <b>$${pedidoHecho.total}</b>, pagas al recoger.</p>
+      <p style="margin:0 0 8px">Recógelo hoy a las <b>${esc(pedidoHecho.hora)}</b> en <b>${esc(s.nombre || '')}</b>. Total <b>${dinero(pedidoHecho.total)}</b>, pagas al recoger.</p>
       <p style="margin:0;font-size:13px">Guarda tu número. Si necesitas cambiar algo, escríbenos por WhatsApp.</p></div>
       <button class="add-btn" style="width:100%;margin-top:12px" onclick="avisarPedido()">Mandar mi pedido por WhatsApp</button>
       <button class="add-btn y" style="width:100%;margin-top:8px" onclick="cerrarBolsa()">Seguir viendo el menú</button>`;
@@ -1584,11 +1591,11 @@ function pintarBolsa(){
   bolsa.forEach((l, k) => {
     const x = lineaInfo(l); if(!x) return;
     const tope = x.p.disp !== undefined && enBolsa(l) >= x.p.disp;
-    h += `<div class="b-lin"><span class="n">${esc(x.p.nombre)}${l.tamano ? (l.tamano === 'g' ? ' (grande)' : ' (chico)') : ''}<small>$${x.pu} c/u${x.des > 0 ? ' · Promo ' + esc(x.p.promo) + ': −$' + x.des : (x.p.promo ? ' · Promo ' + esc(x.p.promo) + ' (aún no aplica)' : '')}</small></span>
+    h += `<div class="b-lin"><span class="n">${esc(x.p.nombre)}${l.tamano ? (l.tamano === 'g' ? ' (grande)' : ' (chico)') : ''}<small>${dinero(x.pu)} c/u${x.des > 0 ? ' · Promo ' + esc(x.p.promo) + ': −' + dinero(x.des) : (x.p.promo ? ' · Promo ' + esc(x.p.promo) + ' (aún no aplica)' : '')}</small></span>
       <button onclick="cambiarCant(${k},-1)" aria-label="Quitar uno">−</button><b aria-live="polite">${l.cantidad}</b><button onclick="cambiarCant(${k},1)"${tope ? ' disabled' : ''} aria-label="Agregar uno">+</button>
-      <span style="min-width:62px;text-align:right;font-weight:700">$${x.sub}</span></div>`;
+      <span style="min-width:62px;text-align:right;font-weight:700;white-space:nowrap">${dinero(x.sub)}</span></div>`;
   });
-  h += `<div class="b-tot"><span>Total</span><span>$${totalBolsa()}</span></div>`;
+  h += `<div class="b-tot"><span>Total</span><span>${dinero(totalBolsa())}</span></div>`;
   if(!horas.length){
     h += `<div class="b-aviso">${conDes && s.limite_desayunos ? 'Ya no alcanzamos a preparar desayunos hoy (hasta las ' + esc(String(s.limite_desayunos).slice(0, 5)) + '). Quítalos para continuar.' : 'Por hoy ya no alcanzamos a preparar pedidos en línea. Escríbenos por WhatsApp.'}</div>`;
     el.innerHTML = h + `<span class="wa-link" style="display:block;text-align:center;margin-top:8px;text-decoration:underline;cursor:pointer" onclick="vaciarBolsa()">Vaciar pedido</span>`; return;
@@ -1603,7 +1610,7 @@ function pintarBolsa(){
       <label class="b-pago off" aria-disabled="true"><input type="radio" name="bPago" disabled><span><b>Link de pago por WhatsApp</b> <span class="b-pron">Próximamente</span><small>Te mandamos un link para pagar antes de recoger</small></span></label></div>
     <label class="b-acepto"><input type="checkbox" id="bAcepto"> <span>Acepto los <a href="#" onclick="cerrarBolsa();goPage('terminos');return false;">Términos y condiciones</a> y el <a href="#" onclick="cerrarBolsa();goPage('privacidad');return false;">Aviso de privacidad</a>.</span></label>
     <div class="b-err" id="bErr" role="alert"></div>
-    <button class="add-btn" id="bOk" style="width:100%;margin-top:6px;min-height:52px;font-size:16px" onclick="confirmarPedido()">${BOLSA_SVG} Confirmar pedido · $${totalBolsa()}</button>
+    <button class="add-btn" id="bOk" style="width:100%;margin-top:6px;min-height:52px;font-size:16px" onclick="confirmarPedido()">${BOLSA_SVG} Confirmar pedido · ${dinero(totalBolsa())}</button>
     <p style="font-size:12px;color:var(--gris);margin:8px 0 0">Al confirmar, apartamos tus piezas y pagas al recoger; si no pasas por ellas, el pedido se cancela solo. <b>Aviso de privacidad simplificado:</b> El Taller Repostería &amp; Coffee Bar (Antonia Nava, Centro, C.P. 40890, Zihuatanejo, Gro.) usa tu nombre y WhatsApp solo para preparar tu pedido y avisarte cuando esté listo; no los usamos para publicidad ni los compartimos. Puedes limitar su uso o pedir que los borremos por WhatsApp al 755 171 2674. <a href="#" onclick="cerrarBolsa();goPage('privacidad');return false;" style="color:inherit">Aviso integral</a>.</p>
     <span style="display:block;text-align:center;margin-top:10px;font-size:13px;text-decoration:underline;cursor:pointer;color:var(--gris)" onclick="vaciarBolsa()">Vaciar pedido</span>`;
   el.innerHTML = h;
@@ -1809,8 +1816,8 @@ function renderBaseBanner(){
       <div class="base-banner">
         <div>
           <div class="bb-tag">Partiendo de</div>
-          <b>${baseElegida.nombre}</b>
-          <span class="bb-sub">${baseElegida.base} · ${baseElegida.relleno} · ${baseElegida.cobertura}</span>
+          <b>${esc(baseElegida.nombre)}</b>
+          <span class="bb-sub">${esc(baseElegida.base)} · ${esc(baseElegida.relleno)} · ${esc(baseElegida.cobertura)}</span>
         </div>
         <button class="bb-btn" onclick="empezarDesdeCero()">Empezar desde cero</button>
       </div>`;

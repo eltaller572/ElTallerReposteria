@@ -17,6 +17,9 @@
   body{font-family:'Helvetica Neue',Arial,sans-serif;background:var(--crema);color:var(--tinta);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;}
   h1,h2,h3{font-family:Georgia,'Times New Roman',serif;margin:0;font-weight:700;}
   button,input,select,textarea{font-family:inherit;font-size:15px;color:var(--tinta);}
+  html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;}
+  button,a{touch-action:manipulation;}
+  @media (pointer:coarse){ input,select,textarea{font-size:16px !important;} }
   button{cursor:pointer;min-height:44px;font-weight:600;border:none;padding:0 16px;}
   button:disabled{opacity:.5;cursor:not-allowed;}
   :focus-visible{outline:3px solid var(--tinta);outline-offset:2px;}
