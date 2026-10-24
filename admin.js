@@ -1350,7 +1350,7 @@ function hhmm(t){ return t ? String(t).slice(0, 5) : ''; }
 async function cargarEnLinea(){
   await sb.rpc('et_revisar_pedidos', {p_suc: S.suc});      // vence los que no se recogieron a tiempo
   var r = await sb.from('pedidos').select('*, pedido_items(nombre,cantidad,tamano,subtotal,promo,origen)')
-    .eq('sucursal', S.suc).or('estado.in.(nuevo,preparando,listo),fecha.eq.' + S.hoy).order('recoger');
+    .eq('sucursal', S.suc).or('estado.in.(nuevo,preparando,listo),fecha.eq.' + S.hoy).order('creado');
   if(r.error) throw r.error;
   S.pedl = r.data || [];
   S.nuevosEnLinea = S.pedl.filter(function(p){ return p.estado === 'nuevo'; }).length;
@@ -1370,15 +1370,17 @@ function detalle(p){
   }).join('');
 }
 function tarjeta(p){
-  var tarde = minutosPara(p.recoger) < 0;
+  var transf = p.pago === 'transferencia';
   var h = '<div class="pedl est-' + p.estado + '">' +
     '<div class="pedl-top"><div><b class="folio">' + esc(p.folio || ('#' + p.id)) + '</b> · ' + esc(p.cliente) + '</div><span class="money">' + fm(p.total) + '</span></div>' +
-    '<div class="pedl-meta"><span class="' + (tarde ? 'tarde' : '') + '">Recoge a las <b>' + E.horaMX(p.recoger) + '</b> (' + cuando(p.recoger) + ')</span> · <span>Paga en tienda</span> · <span>Tel. ' + esc(p.telefono) + '</span></div>' +
+    '<div class="pedl-meta"><span>Pidió a las <b>' + E.horaMX(p.creado) + '</b> (' + cuando(p.creado) + ')</span> · ' + (transf ? '<span class="tag y">Transferencia</span>' : '<span>Paga en tienda</span>') + ' · <span>Tel. ' + esc(p.telefono) + '</span></div>' +
     '<ul class="pedl-items">' + detalle(p) + '</ul><div class="ctl">';
   if(p.estado === 'nuevo') h += '<button class="btn-r btn-s" data-a="enlEstado" data-id="' + p.id + '" data-e="preparando">Empezar a preparar</button>';
   if(p.estado === 'preparando') h += '<button class="btn-r btn-s" data-a="enlEstado" data-id="' + p.id + '" data-e="listo">Ya está listo</button>';
-  h += '<button class="' + (p.estado === 'listo' ? 'btn-r' : 'btn-p') + ' btn-s" data-a="abrir" data-k="ent:' + p.id + '">Entregar y cobrar</button>' +
-    '<button class="btn-y btn-s" data-a="enlWa" data-id="' + p.id + '">' + (p.estado === 'listo' ? 'Avisar que está listo' : 'Escribir al cliente') + '</button>' +
+  if(p.estado === 'listo') h += '<button class="btn-r btn-s" data-a="enlWa" data-id="' + p.id + '">Avisar por WhatsApp que está listo</button>';
+  else if(transf) h += '<button class="btn-y btn-s" data-a="enlWa" data-id="' + p.id + '" data-m="banco">Mandar datos bancarios</button>';
+  h += '<button class="' + (p.estado === 'listo' ? 'btn-y' : 'btn-p') + ' btn-s" data-a="abrir" data-k="ent:' + p.id + '">Entregar y cobrar</button>' +
+    (p.estado === 'listo' ? '' : '<button class="btn-o btn-s" data-a="enlWa" data-id="' + p.id + '">Escribir al cliente</button>') +
     '<button class="btn-o btn-s" data-a="abrir" data-k="pcan:' + p.id + '">Cancelar</button></div>';
   if(S.abierto === 'ent:' + p.id){
     h += '<div class="inline">Cobrar <b>' + fm(p.total) + '</b> a ' + esc(p.cliente) + ' con:<div class="pay" style="margin-top:8px">' +
@@ -1397,7 +1399,7 @@ function ajustesForm(s){
   return '<div class="inline"><h3 style="margin-bottom:8px">Ajustes de pedidos en línea · ' + esc(s.nombre) + '</h3><div class="grid3">' +
     '<div class="fld"><label for="ajP">Minutos para preparar bebidas y desayunos</label><input id="ajP" type="number" min="5" max="120" step="5" value="' + esc(s.prep_min) + '"></div>' +
     '<div class="fld"><label for="ajL">Desayunos hasta las</label><input id="ajL" type="time" value="' + esc(hhmm(s.limite_desayunos)) + '"><div class="note">Vacío = todo el día.</div></div>' +
-    '<div class="fld"><label for="ajT">Esperar al cliente (minutos)</label><input id="ajT" type="number" min="10" max="240" step="5" value="' + esc(s.tolerancia_min) + '"><div class="note">Después, el pedido se cancela solo y las piezas regresan al menú.</div></div>' +
+    '<div class="fld"><label for="ajT">Esperar al cliente (minutos)</label><input id="ajT" type="number" min="10" max="240" step="5" value="' + esc(s.tolerancia_min) + '"><div class="note">Cuenta desde que lo marcas como listo. Si no pasan, se cancela solo y las piezas regresan al menú.</div></div>' +
     '<div class="fld"><label for="ajA">Reciben pedidos desde</label><input id="ajA" type="time" value="' + esc(hhmm(s.abre)) + '"></div>' +
     '<div class="fld"><label for="ajC">Hasta</label><input id="ajC" type="time" value="' + esc(hhmm(s.cierra)) + '"></div>' +
     '</div><div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="enlAjustes">Guardar ajustes</button></div></div>';
@@ -1405,7 +1407,7 @@ function ajustesForm(s){
 function vistaEnLinea(){
   var s = E.sucActual() || {};
   var h = '<h2 style="margin-bottom:6px">Pedidos en línea · ' + esc(s.nombre || '') + '</h2>' +
-    '<p style="margin:0 0 12px;color:#5c4f4c">Los clientes apartan desde el sitio y pagan al recoger. Esta pantalla se actualiza sola' + (S.actEnLinea ? ' (última vez ' + E.horaMX(S.actEnLinea) + ')' : '') + '.</p>';
+    '<p style="margin:0 0 12px;color:#5c4f4c">Los clientes apartan desde el sitio y pagan al recoger o por transferencia. Cuando marques un pedido como listo, avísale por WhatsApp con el botón rojo. Esta pantalla se actualiza sola' + (S.actEnLinea ? ' (última vez ' + E.horaMX(S.actEnLinea) + ')' : '') + '.</p>';
   h += '<div class="box"><div class="row"><div class="nm"><b>' + (s.pedidos_activos ? 'Recibiendo pedidos' : 'Pedidos en pausa') + '</b><small>' +
     (s.pedidos_activos ? 'Horario ' + hhmm(s.abre) + ' a ' + hhmm(s.cierra) + ' · ' + s.prep_min + ' min de preparación' + (s.limite_desayunos ? ' · desayunos hasta las ' + hhmm(s.limite_desayunos) : '') : 'El sitio muestra los productos pero no deja pedir.') + '</small></div>' +
     '<span class="tag ' + (s.pedidos_activos ? 'y' : 'g') + '">' + (s.pedidos_activos ? 'Activo' : 'Pausado') + '</span>' +
@@ -1445,11 +1447,14 @@ async function enlCancelar(id){
   S.abierto = null; E.ok('Pedido cancelado. Las piezas regresaron al menú.');
   await cargarEnLinea();
 }
-function enlWa(id){
+function enlWa(id, modo){
   var p = porId(id); if(!p) return;
   var s = E.sucActual() || {};
-  var txt = p.estado === 'listo'
-    ? 'Hola ' + p.cliente + ', tu pedido ' + p.folio + ' de El Taller (' + (s.nombre || '') + ') ya está listo para recoger. Total ' + fm(p.total) + ', pagas al recoger. ¡Te esperamos!'
+  var transf = p.pago === 'transferencia';
+  var txt = modo === 'banco'
+    ? 'Hola ' + p.cliente + ', gracias por tu pedido ' + p.folio + ' en El Taller (' + (s.nombre || '') + '). El total es ' + fm(p.total) + '. Estos son los datos para la transferencia: '
+    : p.estado === 'listo'
+    ? 'Hola ' + p.cliente + ', tu pedido ' + p.folio + ' de El Taller (' + (s.nombre || '') + ') ya está listo para recoger. Total ' + fm(p.total) + (transf ? ' (transferencia; si aún no la haces, puedes pagar al llegar).' : ', pagas al recoger.') + ' ¡Te esperamos!'
     : 'Hola ' + p.cliente + ', te escribimos de El Taller (' + (s.nombre || '') + ') sobre tu pedido ' + p.folio + '.';
   window.open('https://wa.me/52' + encodeURIComponent(p.telefono) + '?text=' + encodeURIComponent(txt), '_blank', 'noopener,noreferrer');
 }
@@ -1586,7 +1591,7 @@ var ACC = {
   enlEstado: function(b){ return correr(b, function(){ return E.enlEstado(b.getAttribute('data-id'), b.getAttribute('data-e')); }); },
   enlEntregar: function(b){ return correr(b, function(){ return E.enlEntregar(b.getAttribute('data-id'), b.getAttribute('data-p')); }); },
   enlCancelar: function(b){ return correr(b, function(){ return E.enlCancelar(b.getAttribute('data-id')); }); },
-  enlWa: function(b){ E.enlWa(b.getAttribute('data-id')); },
+  enlWa: function(b){ E.enlWa(b.getAttribute('data-id'), b.getAttribute('data-m')); },
   enlTog: function(b){ return correr(b, E.enlTog); },
   enlAjustes: function(b){ return correr(b, E.enlAjustes); },
   fondoOk: function(b){ return correr(b, E.fondoOk); },
