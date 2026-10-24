@@ -347,7 +347,7 @@ async function accionLogin(a){
 
 /* ================= Pestañas ================= */
 var TABS_EMP = [['dia','Menú del día'],['bebidas','Bebidas y desayunos'],['enlinea','Pedidos en línea'],['pasteles','Pasteles'],['caja','Caja'],['pedidos','Pedidos de pastel'],['ventas','Ventas de hoy'],['corte','Corte']];
-var TABS_ADM = [['resumen','Resumen']].concat(TABS_EMP).concat([['costos','Costos'],['historial','Historial'],['equipo','Equipo'],['sucursales','Sucursales']]);
+var TABS_ADM = [['resumen','Resumen']].concat(TABS_EMP).concat([['historial','Historial'],['equipo','Equipo'],['sucursales','Sucursales']]);
 
 function pintarBarra(){
   var who = $('who'), tabs = $('tabs'), tin = $('tabsIn');
@@ -400,14 +400,10 @@ async function cargarTab(){
   pintar();
 }
 
-async function cargarCostosOk(){
-  var r = await sb.rpc('et_costos_capturados');
-  S.costosOk = {};
-  if(!r.error) (r.data || []).forEach(function(c){ S.costosOk[c.clave] = c.tiene_costo; });
-}
+async function cargarCostosOk(){ S.costosOk = {}; }   // Costos se quitó del panel (los datos siguen guardados)
 function claveDia(nombre){ return 'dia:' + String(nombre).trim().toLowerCase(); }
 function costoTag(clave){
-  return S.costosOk[clave] ? '<span class="tag y">Costo capturado</span>' : '<span class="tag g">Sin costo</span>';
+  return '';
 }
 function costoForm(clave, nombre, conGrande){
   return '<div class="inline"><b>Costo de materiales de ' + esc(nombre) + '</b>' +
@@ -451,7 +447,6 @@ function diaForm(p){
     '</div>' +
     '<div class="fld"><label for="dDes">Descripción (opcional)</label><input id="dDes" type="text" maxlength="300" value="' + esc(e.descripcion) + '"></div>' +
     '<div class="fld"><label for="dFoto">' + (p && p.foto_path ? 'Cambiar foto' : 'Foto') + ' (opcional)</label><input id="dFoto" type="file" accept="image/*" capture="environment"><div class="note">Se reduce sola antes de subirla. Las fotos del día se borran a los 2 días.</div></div>' +
-    (p ? '' : '<div class="fld"><label for="dCos">Costo de materiales por pieza (opcional)</label><input id="dCos" type="text" inputmode="decimal" placeholder="Solo lo ve el Administrador"></div>') +
     promoCampos(e) +
     '<div class="err-t" id="fErr"></div>' +
     '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="' + (p ? 'diaEdit' : 'diaNuevo') + '"' + (p ? ' data-id="' + p.id + '"' : '') + '>Guardar</button></div></div>';
@@ -482,7 +477,6 @@ function vistaDia(){
     }
     if(p.promo_tipo) h += '<button class="btn-o btn-s" data-a="promoOff" data-t="productos_dia" data-id="' + p.id + '">Quitar promo</button>';
     h += '<button class="btn-p btn-s" data-a="abrir" data-k="ed:' + p.id + '">Editar</button>' +
-      '<button class="btn-p btn-s" data-a="abrir" data-k="co:' + p.id + '">Costo</button>' +
       '<button class="btn-o btn-s" data-a="abrir" data-k="bo:' + p.id + '">Borrar</button></div>';
     if(S.abierto === 'ed:' + p.id) h += diaForm(p);
     if(S.abierto === 'co:' + p.id) h += costoForm(claveDia(p.nombre), p.nombre, false);
@@ -600,8 +594,7 @@ function vistaBebidas(){
         '<div class="nm"><b>' + esc(m.nombre) + '</b><small>' + fm(m.precio) + (m.precio_grande ? ' · grande ' + fm(m.precio_grande) : '') + '</small><small>' + E.costoTag(k) + ' ' + E.promoTag(m) + '</small></div>' +
         '<div class="ctl"><button class="' + (m.activo ? 'btn-r' : 'btn-o') + ' btn-s" data-a="menuTog" data-id="' + m.id + '">' + (m.activo ? 'En el menú' : 'Oculto') + '</button>' +
         (m.promo_tipo ? '<button class="btn-o btn-s" data-a="promoOff" data-t="menu_items" data-id="' + m.id + '">Quitar promo</button>' : '') +
-        '<button class="btn-p btn-s" data-a="abrir" data-k="me:' + m.id + '">Editar</button>' +
-        '<button class="btn-p btn-s" data-a="abrir" data-k="mc:' + m.id + '">Costo</button></div>';
+        '<button class="btn-p btn-s" data-a="abrir" data-k="me:' + m.id + '">Editar</button></div>';
       if(S.abierto === 'me:' + m.id) h += menuForm(m);
       if(S.abierto === 'mc:' + m.id) h += E.costoForm(k, m.nombre, !!m.precio_grande);
       h += '</div>';
@@ -666,7 +659,6 @@ function opcForm(o, paso){
     '<div class="fld"><label for="oDes">Descripción (opcional)</label><input id="oDes" type="text" maxlength="300" value="' + esc(e.descripcion) + '"></div>' +
     '<div class="fld"><label><input id="oTem" type="checkbox"' + (e.temporada ? ' checked' : '') + '> De temporada</label></div>' +
     '<div class="fld"><label for="oFoto">' + (o && o.foto_path ? 'Cambiar foto' : 'Foto') + ' (opcional)</label><input id="oFoto" type="file" accept="image/*"></div>' +
-    (o ? '' : '<div class="fld"><label for="oCos">Costo de materiales (opcional)</label><input id="oCos" type="text" inputmode="decimal" placeholder="Solo lo ve el Administrador"></div>') +
     '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="' + (o ? 'opcEdit' : 'opcNuevo') + '" ' + (o ? 'data-id="' + o.id + '"' : 'data-p="' + paso + '"') + '>Guardar</button></div></div>';
 }
 function vistaPasteles(){
@@ -686,8 +678,7 @@ function vistaPasteles(){
       h += '<div class="row' + (o.activo ? '' : ' off') + '">' + E.phHTML(o.nombre, o.foto_path) +
         '<div class="nm"><b>' + esc(o.nombre) + (o.temporada ? ' <span class="tag y">De temporada</span>' : '') + '</b><small>' + (o.precio == null ? 'Sin precio' : '+' + fm(o.precio)) + '</small><small>' + E.costoTag(k) + '</small></div>' +
         '<div class="ctl"><button class="' + (o.activo ? 'btn-r' : 'btn-o') + ' btn-s" data-a="opcTog" data-id="' + o.id + '">' + (o.activo ? 'Visible' : 'Apagado') + '</button>' +
-        '<button class="btn-p btn-s" data-a="abrir" data-k="oe:' + o.id + '">Editar</button>' +
-        '<button class="btn-p btn-s" data-a="abrir" data-k="oc:' + o.id + '">Costo</button></div>';
+        '<button class="btn-p btn-s" data-a="abrir" data-k="oe:' + o.id + '">Editar</button></div>';
       if(S.abierto === 'oe:' + o.id) h += opcForm(o);
       if(S.abierto === 'oc:' + o.id) h += E.costoForm(k, o.nombre, false);
       h += '</div>';
@@ -1079,7 +1070,6 @@ function vistaResumen(){
   h += '<div class="kpis">' +
     '<div class="kpi"><small>Ingresos totales</small><b>' + fm(R.total) + '</b><em>Incluye anticipos y saldos de pasteles</em></div>' +
     '<div class="kpi"><small>Ventas de mostrador</small><b>' + fm(R.mostrador) + '</b><em>' + R.tickets + ' tickets · promedio ' + fm(R.tickets ? R.mostrador / R.tickets : 0) + '</em></div>' +
-    '<div class="kpi"><small>Ganancia real</small><b>' + fm(gan) + '</b><em>' + (R.sinCosto ? R.sinCosto + ' piezas vendidas sin costo capturado (' + fm(R.ingresoSinCosto) + ' fuera del cálculo)' : 'Todo lo vendido tiene costo') + '</em></div>' +
     '<div class="kpi"><small>Saldos de pasteles por cobrar</small><b>' + fm(S.saldoPend) + '</b><em>Anticipos y saldos cobrados: ' + fm(R.anticipos) + '</em></div></div>';
   var dias = Object.keys(R.dias).sort(), mx = Math.max.apply(null, [1].concat(dias.map(function(d){ return R.dias[d]; })));
   h += '<div class="box"><h3>Ingresos por día</h3>' + (dias.length ? '<div class="bars">' + dias.map(function(d){
@@ -1124,16 +1114,16 @@ function csvCampo(v){
   return '"' + s.replace(/"/g,'""') + '"';
 }
 function excel(){
-  var L = [['Sucursal','Fecha','Hora','Ticket','Tipo','Producto','Tamaño','Cantidad','Precio unitario','Promoción','Descuento','Subtotal','Costo unitario','Ganancia','Método de pago','Estado','Motivo cancelación']];
+  var L = [['Sucursal','Fecha','Hora','Ticket','Tipo','Producto','Tamaño','Cantidad','Precio unitario','Promoción','Descuento','Subtotal','Método de pago','Estado','Motivo cancelación']];
   S.rv.forEach(function(v){
     var base = [E.sucNombre(v.sucursal), v.fecha, E.horaMX(v.creada), v.id, v.tipo];
     var fin = [v.metodo, v.estado, v.motivo_cancel || ''];
     if(v.tipo === 'venta' && (v.venta_items || []).length){
       v.venta_items.forEach(function(it){
         var cu = costoDe(it);
-        L.push(base.concat([it.nombre, it.tamano === 'g' ? 'Grande' : it.tamano === 'ch' ? 'Chico' : '', it.cantidad, it.precio_unit, it.promo || '', it.descuento || 0, it.subtotal, cu == null ? '' : cu, cu == null ? '' : (Number(it.subtotal) - cu * it.cantidad).toFixed(2)]).concat(fin));
+        L.push(base.concat([it.nombre, it.tamano === 'g' ? 'Grande' : it.tamano === 'ch' ? 'Chico' : '', it.cantidad, it.precio_unit, it.promo || '', it.descuento || 0, it.subtotal]).concat(fin));
       });
-    } else L.push(base.concat([v.tipo === 'anticipo' ? 'Anticipo de pastel' : 'Saldo de pastel', '', 1, v.total, '', 0, v.total, '', '']).concat(fin));
+    } else L.push(base.concat([v.tipo === 'anticipo' ? 'Anticipo de pastel' : 'Saldo de pastel', '', 1, v.total, '', 0, v.total]).concat(fin));
   });
   var txt = '\ufeff' + L.map(function(r){ return r.map(csvCampo).join(','); }).join('\r\n');
   var a = document.createElement('a');
@@ -1280,7 +1270,7 @@ function sucForm(s){
     '<div class="grid2">' +
     '<div class="fld"><label for="sN_' + k + '">Nombre</label><input id="sN_' + k + '" type="text" maxlength="60" value="' + esc(e.nombre) + '" placeholder="Sucursal Querétaro"></div>' +
     '<div class="fld"><label for="sC_' + k + '">Ciudad</label><input id="sC_' + k + '" type="text" maxlength="60" value="' + esc(e.ciudad) + '"></div>' +
-    '<div class="fld"><label for="sW_' + k + '">WhatsApp (10 dígitos)</label><input id="sW_' + k + '" type="tel" inputmode="numeric" maxlength="14" value="' + esc(w) + '"></div>' +
+    '<div class="fld"><label for="sW_' + k + '">WhatsApp (10 dígitos) · obligatorio para pedidos en línea</label><input id="sW_' + k + '" type="tel" inputmode="numeric" maxlength="14" value="' + esc(w) + '"></div>' +
     '<div class="fld"><label for="sD_' + k + '">Dirección</label><input id="sD_' + k + '" type="text" maxlength="160" value="' + esc(e.direccion) + '"></div>' +
     '</div>' +
     '<div class="fld"><label><input id="sA_' + k + '" type="checkbox"' + (e.activa === false ? '' : ' checked') + '> Mostrar en el sitio</label><div class="note">Si la apagas, los clientes ya no pueden elegirla ni hacer pedidos ahí.</div></div>' +
@@ -1301,7 +1291,7 @@ function vistaSucAdmin(){
   if(S.sucs.length > 1){
     var op = S.sucs.map(function(s){ return '<option value="' + esc(s.id) + '">' + esc(s.nombre) + '</option>'; }).join('');
     h += '<div class="box"><h3>Copiar menú de bebidas y desayunos</h3><div class="in">' +
-      '<p style="margin:0 0 10px;color:#5c4f4c">Copia los productos con sus precios, fotos y costos. Lo que ya exista en la sucursal destino no se toca. Después puedes cambiar los precios de cada una por separado.</p>' +
+      '<p style="margin:0 0 10px;color:#5c4f4c">Copia los productos con sus precios y fotos. Lo que ya exista en la sucursal destino no se toca. Después puedes cambiar los precios de cada una por separado.</p>' +
       '<div class="grid3"><div class="fld"><label for="cmD">Copiar de</label><select id="cmD">' + op + '</select></div>' +
       '<div class="fld"><label for="cmH">A</label><select id="cmH">' + S.sucs.map(function(s, i){ return '<option value="' + esc(s.id) + '"' + (i === 1 ? ' selected' : '') + '>' + esc(s.nombre) + '</option>'; }).join('') + '</select></div>' +
       '<div class="fld"><label>&nbsp;</label><button class="btn-r" data-a="copiarMenu" style="width:100%">Copiar menú</button></div></div></div></div>';

@@ -690,6 +690,36 @@
   .rot-bar{ display:flex; justify-content:flex-end; margin-top:14px; }
   .rot-bar[hidden]{ display:none; }
   .section-head > div:first-child > :last-child{ margin-bottom:0; }
+  /* ===== Mi pedido (el cliente ve cómo va su pedido) ===== */
+  .mp-chip{ position:fixed; left:16px; bottom:calc(24px + env(safe-area-inset-bottom, 0px)); z-index:60; max-width:calc(100% - 112px); min-height:56px; padding:8px 14px; background:var(--amarillo); color:var(--tinta); border:2px solid var(--tinta); box-shadow:3px 3px 0 var(--tinta); display:flex; align-items:center; gap:10px; text-align:left; font-family:inherit; cursor:pointer; }
+  .mp-chip[hidden]{ display:none; }
+  .mp-chip small{ display:block; font-size:11px; letter-spacing:1px; text-transform:uppercase; font-weight:700; color:var(--rojo-oscuro); }
+  .mp-chip b{ display:block; font-size:14px; }
+  .mp-chip .dot{ width:10px; height:10px; border-radius:50%; background:var(--rojo); flex:none; animation:mpLatido 1.6s ease-in-out infinite; }
+  .mp-chip.listo{ background:var(--rojo); color:#fff; } .mp-chip.listo small{ color:var(--amarillo); } .mp-chip.listo .dot{ background:var(--amarillo); }
+  .mp-chip:active{ transform:translate(2px,2px); box-shadow:none; }
+  @keyframes mpLatido{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+  @media (prefers-reduced-motion: reduce){ .mp-chip .dot{ animation:none; } }
+  .mp-link{ display:block; width:100%; margin:0 0 10px; padding:10px 12px; background:var(--amarillo); border:2px solid var(--tinta); font-weight:700; font-size:14px; text-align:left; color:var(--tinta); }
+  .mp-card{ border:2px solid var(--tinta); background:#fff; margin:12px 0; box-shadow:3px 3px 0 var(--tinta); }
+  .mp-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding:12px 14px; background:var(--amarillo); border-bottom:2px solid var(--tinta); }
+  .mp-head .folio{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:20px; letter-spacing:1px; font-weight:700; }
+  .mp-head small{ display:block; font-size:12px; color:var(--gris); }
+  .mp-card.listo .mp-head{ background:var(--rojo); color:#fff; } .mp-card.listo .mp-head small{ color:rgba(255,255,255,.85); }
+  .mp-card.fin .mp-head{ background:var(--rosa-suave); }
+  .mp-steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:4px; padding:12px 14px 4px; }
+  .mp-steps i{ height:6px; background:var(--rosa); } .mp-steps i.on{ background:var(--rojo); }
+  .mp-labels{ display:grid; grid-template-columns:repeat(4,1fr); gap:4px; padding:0 14px 10px; font-size:11px; color:var(--gris); }
+  .mp-labels .on{ color:var(--tinta); font-weight:700; }
+  .mp-msg{ padding:4px 14px 8px; font-size:14px; }
+  .mp-items{ list-style:none; margin:0; padding:0 14px 10px; font-size:13px; color:var(--gris); }
+  .mp-tot{ display:flex; justify-content:space-between; padding:0 14px 12px; font-weight:700; }
+  .mp-acts{ display:flex; flex-direction:column; gap:8px; padding:0 14px 14px; }
+  .mp-acts .add-btn{ width:100%; flex:none; }
+  .mp-conf{ background:var(--rosa-suave); border:2px solid var(--tinta); padding:10px 12px; font-size:13px; }
+  .mp-conf .fila{ display:flex; gap:8px; margin-top:8px; } .mp-conf .fila button{ flex:1; }
+  .mp-buscar{ margin-top:16px; border-top:2px dashed var(--rosa); padding-top:12px; font-size:14px; }
+  .mp-buscar summary{ cursor:pointer; font-weight:700; }
 </style>
 </head>
 <body>
@@ -988,7 +1018,6 @@
         <p style="margin:0 0 12px;">Esto nos permite ofrecerte pasteles no solo visualmente hermosos, sino también deliciosos y con una mejor duración y estructura para cada diseño.</p>
         <p style="margin:0;">Cada pastel está hecho con dedicación, cuidando cada detalle para que tu experiencia sea tan especial como el momento que estás celebrando.</p>
       </div>
-      <div class="materials-note">* Texto real, tal cual lo usa el negocio en su sitio actual (cakes.my.canva.site).</div>
     </div>
   </section>
 </div>
@@ -1157,6 +1186,7 @@
 </footer>
 
 <a href="#" class="floating-wa" onclick="cotizarGenerico(); return false;"><svg class="wa-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.47s1.06 2.86 1.21 3.06c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.28.17-1.41-.07-.13-.27-.2-.57-.35zM12.04 2C6.55 2 2.1 6.45 2.1 11.94c0 1.76.46 3.4 1.27 4.83L2 22l5.36-1.4a9.9 9.9 0 004.68 1.19h.01c5.48 0 9.94-4.45 9.94-9.94C21.99 6.45 17.53 2 12.04 2zm0 18.08h-.01a8.25 8.25 0 01-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 01-1.26-4.38c0-4.56 3.71-8.27 8.27-8.27 2.21 0 4.28.86 5.84 2.42a8.2 8.2 0 012.42 5.85c0 4.56-3.71 8.24-8.27 8.24z"/></svg><span>Cotizar</span></a>
+<button type="button" class="mp-chip" id="mpChip" hidden onclick="abrirMisPedidos()"></button>
 <div class="toast" id="toast"></div>
 
 <script src="catalogo.js"></script>
@@ -1177,6 +1207,7 @@ function esc(v){
 /* ✅ Número real de El Taller Repostería, tomado de su menú oficial (Plaza Pascal). */
 const WHATSAPP_GENERAL = "527551712674";
 let WHATSAPP_NUMBER = WHATSAPP_GENERAL;   // cambia al elegir sucursal
+let WA_PROPIO = true;                      // false = la sucursal aún no tiene WhatsApp y se usa el general
 
 /* ============ ROUTER ============ */
 function goPage(id){
@@ -1523,6 +1554,7 @@ function pintarSucursal(){
   document.getElementById('sucNom').textContent = s ? s.nombre : 'Elegir sucursal';
   document.getElementById('pieSuc').textContent = s ? s.nombre + ((s.direccion || s.ciudad) ? ' · ' + String(s.direccion || s.ciudad).split(' · ')[0] : '') : 'Plaza Pascal';
   WHATSAPP_NUMBER = (s && s.whatsapp) || WHATSAPP_GENERAL;
+  WA_PROPIO = !s || !!s.whatsapp;
   const cs = document.getElementById('contactoSucs');
   if(cs) cs.innerHTML = SUCS.map(x => {
     const hr = (x.abre && x.cierra) ? 'Horario: ' + String(x.abre).slice(0, 5) + ' a ' + String(x.cierra).slice(0, 5) + ' h' : '';
@@ -1532,7 +1564,7 @@ function pintarSucursal(){
       ${x.ciudad ? `<p>${esc(x.ciudad)}</p>` : ''}
       ${x.direccion ? `<p>${esc(x.direccion)}</p>` : ''}
       ${hr ? `<p>${esc(hr)}</p>` : ''}
-      <a class="btn-wa-s" href="https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent('Hola! Los contacto desde su página web (' + x.nombre + ').')}" target="_blank" rel="noopener noreferrer">WhatsApp ${esc(x.nombre)}</a>
+      <a class="btn-wa-s" href="https://wa.me/${encodeURIComponent(wa)}?text=${encodeURIComponent('Hola! Los contacto desde su página web (' + x.nombre + ').')}" target="_blank" rel="noopener noreferrer">${x.whatsapp ? 'WhatsApp ' + esc(x.nombre) : 'WhatsApp (te atiende ' + esc(sucGeneralNombre()) + ')'}</a>
     </div>`;
   }).join('');
   document.getElementById('sucOps').innerHTML = SUCS.map(x =>
@@ -1668,10 +1700,10 @@ let ultimoFoco = null;
 function abrirBolsa(){
   if(!SUC){ abrirSucursal(); return; }
   ultimoFoco = document.activeElement;
-  pedidoHecho = null; pintarBolsa(); document.getElementById('bolsaVelo').classList.add('on');
+  mpVista = false; pedidoHecho = null; pintarBolsa(); document.getElementById('bolsaVelo').classList.add('on');
   const x = document.querySelector('#bolsa .b-x'); if(x) x.focus();
 }
-function cerrarBolsa(){ avisoBolsa = ''; document.getElementById('bolsaVelo').classList.remove('on'); if(ultimoFoco && ultimoFoco.focus) ultimoFoco.focus(); }
+function cerrarBolsa(){ avisoBolsa = ''; mpVista = false; mpConfirmar = null; document.getElementById('bolsaVelo').classList.remove('on'); if(ultimoFoco && ultimoFoco.focus) ultimoFoco.focus(); }
 function pintarBolsa(){
   const el = document.getElementById('bolsa'); const s = sucDatos() || {};
   let h = `<div class="b-cab"><div><h2 style="font-size:24px">Tu pedido</h2><span style="font-size:13px;color:var(--gris)">${esc(s.nombre || '')} · recoges en tienda</span></div><button class="b-x" onclick="cerrarBolsa()" aria-label="Cerrar">×</button></div>`;
@@ -1680,9 +1712,11 @@ function pintarBolsa(){
       <p style="margin:0 0 8px">Te mandamos un WhatsApp cuando tu pedido esté listo para recoger en <b>${esc(s.nombre || '')}</b>. Total <b>${dinero(pedidoHecho.total)}</b>${pedidoHecho.pago === 'transferencia' ? ', por transferencia.' : ', pagas al recoger.'}</p>
       <p style="margin:0;font-size:13px">${pedidoHecho.pago === 'transferencia' ? 'Toca el botón para pedir los datos bancarios por WhatsApp.' : 'Guarda tu número. Si necesitas cambiar algo, escríbenos por WhatsApp.'}</p></div>
       <button class="add-btn" style="width:100%;margin-top:12px" onclick="avisarPedido()">${pedidoHecho.pago === 'transferencia' ? 'Pedir datos bancarios por WhatsApp' : 'Mandar mi pedido por WhatsApp'}</button>
+      <button class="add-btn y" style="width:100%;margin-top:8px" onclick="abrirMisPedidos()">Ver cómo va mi pedido</button>
       <button class="add-btn y" style="width:100%;margin-top:8px" onclick="cerrarBolsa()">Seguir viendo el menú</button>`;
     el.innerHTML = h; return;
   }
+  if(mpLeer().length) h += `<button class="mp-link" onclick="abrirMisPedidos()">Ver mis pedidos (${mpLeer().length}) →</button>`;
   if(avisoBolsa) h += `<div class="b-aviso" role="alert">${esc(avisoBolsa)}</div>`;
   if(!s.pedidos_activos){ el.innerHTML = h + `<div class="b-aviso">Por ahora ${esc(s.nombre || 'esta sucursal')} no recibe pedidos en línea. Escríbenos por WhatsApp y con gusto te apartamos.</div><button class="add-btn" style="width:100%" onclick="cotizarGenerico()">Escribir por WhatsApp</button>`; return; }
   if(!bolsa.length){ el.innerHTML = h + `<p>Tu pedido está vacío.</p><p style="color:var(--gris);font-size:14px">Toca <b>Agregar</b> en cualquier pan, galleta, bebida o desayuno para apartarlo y recogerlo hoy.</p><button class="add-btn y" style="width:100%" onclick="cerrarBolsa();goPage('stock')">Ver el menú del día</button>`; return; }
@@ -1733,10 +1767,11 @@ async function confirmarPedido(){
   enviando = true; e.textContent = '';
   const antes = b.innerHTML; b.disabled = true; b.innerHTML = '<span class="btn-cargando" aria-hidden="true"></span> Enviando tu pedido…';
   try{
-    const r = await conLimite(SB.rpc('et_crear_pedido', {p_suc:SUC, p_items:items, p_cliente:nom, p_telefono:tel, p_recoger:null, p_pago:pago}), 15000);
+    const r = await conLimite(SB.rpc('et_hacer_pedido', {p_suc:SUC, p_items:items, p_cliente:nom, p_telefono:tel, p_recoger:null, p_pago:pago}), 15000);
     if(r.error) throw r.error;
     const x = Array.isArray(r.data) ? r.data[0] : r.data;
     guardar('et_nombre', nom); guardar('et_tel', tel);
+    mpAgregar(x.token, x.folio, SUC);
     pedidoHecho = {folio:x.folio, total:Number(x.total), pago, nombre:nom, detalle: bolsa.map(l => { const i = lineaInfo(l); return i ? l.cantidad + ' × ' + i.p.nombre + (l.tamano ? (l.tamano === 'g' ? ' (grande)' : ' (chico)') : '') : ''; }).filter(Boolean)};
     bolsa = []; guardarBolsa(); pintarContador(); pintarBolsa();
     cargarDatosReales();
@@ -2037,6 +2072,163 @@ function renderSummary(){
     : (precio>0 ? `$${(precio-150).toLocaleString('es-MX')} - $${(precio+150).toLocaleString('es-MX')} MXN` : '$0 MXN');
 }
 
+/* ============ MI PEDIDO: el cliente ve cómo va su pedido ============ */
+const MP_EST = {nuevo:'Recibido', preparando:'En preparación', listo:'Listo para recoger', entregado:'Entregado', cancelado:'Cancelado', vencido:'Cancelado'};
+const MP_ACTIVOS = ['nuevo', 'preparando', 'listo'];
+let misPedidos = [], mpDatos = [], mpTimer = null, mpVista = false, mpConfirmar = null, mpBuscado = null, mpErr = '';
+function mpLeer(){
+  try{
+    const a = JSON.parse(leer('et_mis_pedidos') || '[]'), lim = Date.now() - 3 * 864e5;
+    return (Array.isArray(a) ? a : []).filter(x => x && /^[0-9a-f-]{36}$/i.test(x.t) && Date.parse(x.c) > lim).slice(0, 10);
+  }catch(e){ return []; }
+}
+function mpGuardar(){ guardar('et_mis_pedidos', JSON.stringify(misPedidos)); }
+function mpAgregar(token, folio, suc){
+  if(!token) return;
+  misPedidos = [{t:token, f:folio, s:suc, c:new Date().toISOString()}].concat(mpLeer().filter(x => x.t !== token)).slice(0, 10);
+  mpGuardar(); mpRefrescar();
+}
+async function mpRefrescar(){
+  misPedidos = mpLeer();
+  if(!SB || !misPedidos.length){ mpDatos = []; mpPintar(); return; }
+  try{
+    const r = await conLimite(SB.rpc('et_mi_pedido', {p_tokens: misPedidos.map(x => x.t)}), 12000);
+    if(r.error) throw r.error;
+    mpDatos = r.data || [];
+    const vivos = new Set(mpDatos.map(p => p.token));
+    misPedidos = misPedidos.filter(x => vivos.has(x.t)); mpGuardar();
+  }catch(e){ /* sin conexión: se queda lo último que vimos */ }
+  mpPintar();
+}
+function mpPintar(){
+  const chip = document.getElementById('mpChip');
+  const act = mpDatos.filter(p => MP_ACTIVOS.includes(p.estado));
+  if(chip){
+    if(act.length){
+      const p = act[0];
+      chip.hidden = false;
+      chip.className = 'mp-chip' + (p.estado === 'listo' ? ' listo' : '');
+      chip.innerHTML = `<span class="dot" aria-hidden="true"></span><span><small>${act.length > 1 ? act.length + ' pedidos en curso' : 'Tu pedido ' + esc(p.folio)}</small><b>${esc(MP_EST[p.estado])}</b></span>`;
+      chip.setAttribute('aria-label', 'Ver mi pedido: ' + MP_EST[p.estado]);
+    } else chip.hidden = true;
+  }
+  if(mpVista && document.getElementById('bolsaVelo').classList.contains('on')) pintarMisPedidos();
+  clearInterval(mpTimer);
+  if(act.length || mpVista) mpTimer = setInterval(() => { if(!document.hidden) mpRefrescar(); }, 30000);
+}
+document.addEventListener('visibilitychange', () => { if(!document.hidden && mpLeer().length) mpRefrescar(); });
+function abrirMisPedidos(){
+  ultimoFoco = document.activeElement;
+  mpVista = true; mpConfirmar = null; mpErr = '';
+  pintarMisPedidos(); document.getElementById('bolsaVelo').classList.add('on');
+  const x = document.querySelector('#bolsa .b-x'); if(x) x.focus();
+  mpRefrescar();
+}
+function mpLista(){
+  const l = mpDatos.slice();
+  if(mpBuscado && !l.some(p => p.folio === mpBuscado.folio)) l.push(mpBuscado);
+  return l;
+}
+function mpTarjeta(p, k){
+  const fin = p.estado === 'cancelado' || p.estado === 'vencido';
+  const paso = {nuevo:0, preparando:1, listo:2, entregado:3}[p.estado];
+  const activo = MP_ACTIVOS.includes(p.estado);
+  const suc = p.sucursal_nombre || '';
+  const hora = p.creado ? new Date(p.creado).toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit', timeZone:'America/Mexico_City'}) : '';
+  const msg = {
+    nuevo:'Recibimos tu pedido. Te avisamos por WhatsApp cuando esté listo.',
+    preparando:'Ya lo estamos preparando.',
+    listo:'¡Tu pedido está listo! Pasa por él a ' + suc + '.',
+    entregado:'Entregado. ¡Gracias por tu compra!',
+    cancelado:'Este pedido se canceló.',
+    vencido:'Se canceló porque no se recogió a tiempo.'
+  }[p.estado] || '';
+  const items = (p.items || []).map(i => `<li>${Number(i.c)} × ${esc(i.n)}${i.t === 'g' ? ' (grande)' : i.t === 'ch' ? ' (chico)' : ''}</li>`).join('');
+  let h = `<div class="mp-card${p.estado === 'listo' ? ' listo' : ''}${fin ? ' fin' : ''}">
+    <div class="mp-head"><div><span class="folio">${esc(p.folio)}</span><small>${esc(suc)}${hora ? ' · pedido a las ' + esc(hora) : ''}</small></div><b>${esc(MP_EST[p.estado] || '')}</b></div>`;
+  if(!fin){
+    h += `<div class="mp-steps" aria-hidden="true">${[0,1,2,3].map(i => `<i class="${i <= paso ? 'on' : ''}"></i>`).join('')}</div>
+      <div class="mp-labels" aria-hidden="true">${['Recibido','Preparando','Listo','Entregado'].map((t, i) => `<span class="${i === paso ? 'on' : ''}">${t}</span>`).join('')}</div>`;
+  }
+  h += `<div class="mp-msg" role="status">${esc(msg)}</div><ul class="mp-items">${items}</ul>
+    <div class="mp-tot"><span>Total${p.pago === 'transferencia' ? ' · transferencia' : ' · pagas al recoger'}</span><span>${dinero(p.total)}</span></div><div class="mp-acts">`;
+  if(activo){
+    h += `<button class="add-btn" onclick="mpWhats(${k}, 'agregar')">Agregar algo o escribir a la sucursal</button>`;
+    if(p.pago === 'transferencia') h += `<button class="add-btn y" onclick="mpWhats(${k}, 'banco')">Pedir datos bancarios por WhatsApp</button>`;
+    if(p.estado === 'nuevo' && p.token){
+      if(mpConfirmar === p.token) h += `<div class="mp-conf">¿Seguro que quieres cancelar el pedido ${esc(p.folio)}?<div class="fila"><button class="add-btn y" onclick="mpConfirmar=null;pintarMisPedidos()">No</button><button class="add-btn" onclick="mpCancelar(${k})">Sí, cancelar</button></div></div>`;
+      else h += `<span class="wa-link" style="display:block;text-align:center;font-size:13px;text-decoration:underline;cursor:pointer;color:var(--gris)" onclick="mpConfirmar=mpLista()[${k}].token;pintarMisPedidos()">Cancelar pedido</span>`;
+    }
+  } else if(p.token){
+    h += `<span class="wa-link" style="display:block;text-align:center;font-size:13px;text-decoration:underline;cursor:pointer;color:var(--gris)" onclick="mpQuitar(${k})">Quitar de la lista</span>`;
+  }
+  return h + '</div></div>';
+}
+function pintarMisPedidos(){
+  const el = document.getElementById('bolsa');
+  const l = mpLista();
+  let h = `<div class="b-cab"><div><h2 style="font-size:24px">Mis pedidos</h2><span style="font-size:13px;color:var(--gris)">Se actualiza solo</span></div><button class="b-x" onclick="cerrarBolsa()" aria-label="Cerrar">×</button></div>`;
+  if(mpErr) h += `<div class="b-aviso" role="alert">${esc(mpErr)}</div>`;
+  if(!l.length) h += `<p>No hay pedidos recientes en este teléfono.</p>`;
+  l.forEach((p, k) => { h += mpTarjeta(p, k); });
+  h += `<details class="mp-buscar"><summary>¿Pediste desde otro teléfono?</summary>
+      <div class="b-fld"><label for="mpF">Número de pedido</label><input id="mpF" type="text" maxlength="12" autocapitalize="characters" placeholder="P-123"></div>
+      <div class="b-fld"><label for="mpT">WhatsApp con el que pediste</label><input id="mpT" type="tel" inputmode="numeric" maxlength="14"></div>
+      <button class="add-btn y" style="width:100%" onclick="mpBuscar()">Buscar mi pedido</button></details>
+    <button class="add-btn y" style="width:100%;margin-top:14px" onclick="abrirBolsa()">Ir a mi bolsa</button>`;
+  el.innerHTML = h;
+}
+function mpWhats(k, tipo){
+  const p = mpLista()[k]; if(!p) return;
+  const num = p.whatsapp || WHATSAPP_GENERAL;
+  const suc = p.sucursal_nombre || '';
+  const txt = tipo === 'banco'
+    ? `Hola! Hice el pedido *${p.folio}* en ${suc} por ${dinero(p.total)} y voy a pagar por transferencia. ¿Me pasan los datos bancarios?`
+    : `Hola! Tengo el pedido *${p.folio}* en ${suc}. Quisiera agregar o cambiar: `;
+  if(!p.whatsapp) showToast('Esta sucursal aún no tiene WhatsApp: te atiende ' + sucGeneralNombre() + '.');
+  window.open(`https://wa.me/${encodeURIComponent(num)}?text=${encodeURIComponent((p.whatsapp ? '' : '(Pedido de ' + suc + ') ') + txt)}`, '_blank', 'noopener,noreferrer');
+}
+async function mpCancelar(k){
+  const p = mpLista()[k]; if(!p || !p.token) return;
+  mpErr = '';
+  try{
+    const r = await conLimite(SB.rpc('et_cancelar_mi_pedido', {p_token: p.token}), 12000);
+    if(r.error) throw r.error;
+    showToast('Cancelamos tu pedido ' + p.folio + '.');
+    cargarDatosReales();
+  }catch(e){
+    const m = (e && e.message) || '';
+    mpErr = /tiempo|fetch|network/i.test(m) ? 'No hay conexión. Inténtalo de nuevo.' : (m.replace(/^.*?ERROR:\s*/, '') || 'No pudimos cancelar. Escríbele a la sucursal.');
+  }
+  mpConfirmar = null; await mpRefrescar(); pintarMisPedidos();
+}
+function mpQuitar(k){
+  const p = mpLista()[k]; if(!p) return;
+  misPedidos = mpLeer().filter(x => x.t !== p.token); mpGuardar();
+  mpDatos = mpDatos.filter(x => x.token !== p.token);
+  mpPintar(); pintarMisPedidos();
+}
+async function mpBuscar(){
+  const f = (document.getElementById('mpF').value || '').trim().toUpperCase();
+  const t = (document.getElementById('mpT').value || '').replace(/\D/g, '');
+  mpErr = '';
+  if(!/^[A-Z]-\d{1,9}$/.test(f) || (t.length !== 10 && t.length !== 12)){ mpErr = 'Escribe tu número de pedido (por ejemplo P-123) y el WhatsApp de 10 dígitos.'; pintarMisPedidos(); return; }
+  try{
+    const r = await conLimite(SB.rpc('et_mi_pedido', {p_folio: f, p_telefono: t}), 12000);
+    if(r.error) throw r.error;
+    const d = r.data;
+    if(!d){ mpErr = 'No encontramos ese pedido. Revisa el número y el WhatsApp.'; }
+    else mpBuscado = {token:null, folio:d.folio, estado:d.estado, total:d.total, pago:d.pago, sucursal:d.sucursal, sucursal_nombre:d.sucursal_nombre, whatsapp:d.whatsapp, creado:d.creado,
+      items:(d.items || []).map(i => ({n:i.nombre, c:i.cantidad, t:i.tamano}))};
+  }catch(e){ mpErr = 'No pudimos buscar tu pedido. Revisa tu conexión.'; }
+  pintarMisPedidos();
+}
+function sucGeneralNombre(){
+  const g = SUCS.find(x => x.whatsapp === WHATSAPP_GENERAL);
+  return g ? g.nombre : 'Sucursal Zihuatanejo';
+}
+mpRefrescar();
+
 /* ============ WHATSAPP ============ */
 function showToast(msg){
   const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
@@ -2102,7 +2294,10 @@ function cotizarPersonalizado(){
   showToast(refImageName ? 'Abriendo WhatsApp — no olvides adjuntar tu imagen 📎' : 'Abriendo WhatsApp...');
 }
 
-function abrirWhatsapp(msgPlano){ window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msgPlano)}`, '_blank', 'noopener,noreferrer'); }
+function abrirWhatsapp(msgPlano){
+  const s = sucDatos();
+  if(!WA_PROPIO && s){ msgPlano = '(Escribo por ' + s.nombre + ') ' + msgPlano; showToast('Esta sucursal aún no tiene WhatsApp: te atiende ' + sucGeneralNombre() + '.'); }
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msgPlano)}`, '_blank', 'noopener,noreferrer'); }
 
 /* ============ INIT ============ */
 /* ============ ROTADOR DEL EQUIPO ============ */
