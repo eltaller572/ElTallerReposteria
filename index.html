@@ -1432,13 +1432,14 @@ function renderSampler(){
 
 /* Rotación de "Recién salido del horno" (solo cuando no hay producto del día).
    Se detiene con el mouse encima, al tocarla, con el botón de pausa, si la pestaña no se ve
-   o si la sección está fuera de pantalla; no se mueve si el teléfono pide menos animación. */
+   o si la sección está fuera de pantalla. Si el equipo pide menos animación, cambia sin deslizarse y más despacio. */
 const ROT = {t:null, pausa:false, encima:false, toque:0};
 const ICO_PAUSA = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>', ICO_PLAY = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5l12 7-12 7z"/></svg>';
 function rotacionSampler(on){
   const fila = document.getElementById('samplerRow'), b = document.getElementById('samplerPausa');
   const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const activa = on && !quieto && fila && fila.children.length > 1;
+  const activa = on && fila && fila.children.length > 1;
+  const modo = quieto ? 'auto' : 'smooth';
   if(b) b.parentElement.hidden = !activa;
   clearInterval(ROT.t);
   if(!activa) return;
@@ -1456,9 +1457,9 @@ function rotacionSampler(on){
     if(r.bottom < 0 || r.top > window.innerHeight || !fila.offsetParent) return;
     const primera = fila.children[0];
     const paso = primera.getBoundingClientRect().width + (parseFloat(getComputedStyle(fila).columnGap) || 16);
-    if(fila.scrollLeft + fila.clientWidth >= fila.scrollWidth - 4) fila.scrollTo({left:0, behavior:'smooth'});
-    else fila.scrollBy({left:paso, behavior:'smooth'});
-  }, 3500);
+    if(fila.scrollLeft + fila.clientWidth >= fila.scrollWidth - 4) fila.scrollTo({left:0, behavior:modo});
+    else fila.scrollBy({left:paso, behavior:modo});
+  }, quieto ? 5000 : 3500);
 }
 function pausarSampler(){
   ROT.pausa = !ROT.pausa;
