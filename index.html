@@ -777,16 +777,16 @@
   <div class="home-hero" id="homeHero">
     <div class="home-hero-brand">
       <div class="hero-panel">
-      <div class="hc-eyebrow">El Taller Repostería & Coffee Bar</div>
-      <h1>Todo lo que horneamos,<br>hecho para compartir</h1>
-      <p>Pasteles, pan, galletas y café — elige un diseño o crea el tuyo, y cotiza directo por WhatsApp.</p>
+      <div class="hc-eyebrow" data-txt="inicio_etiqueta">El Taller Repostería & Coffee Bar</div>
+      <h1 data-txt="inicio_titulo" data-br>Todo lo que horneamos,<br>hecho para compartir</h1>
+      <p data-txt="inicio_texto">Pasteles, pan, galletas y café — elige un diseño o crea el tuyo, y cotiza directo por WhatsApp.</p>
       <div style="display:flex; gap:14px; flex-wrap:wrap;">
         <a class="btn" href="#" onclick="goPage('pasteles'); return false;">Pedir un pastel</a>
         <a class="btn ghost" style="border-color:var(--rojo-oscuro); color:var(--rojo-oscuro);" href="#" onclick="goPage('stock'); return false;">Ver lo de hoy</a>
       </div>
       </div>
     </div>
-    <div class="home-hero-photo">
+    <div class="home-hero-photo" id="heroFotos">
       <div class="img-bg1 slide active" ></div>
       <div class="img-bg2 slide" ></div>
       <div class="img-bg3 slide" ></div>
@@ -872,10 +872,10 @@
         <div>
           <div class="eyebrow">Lo que pasa en El Taller</div>
           <h2>Temporadas y experiencias</h2>
-          <p style="font-size:14px;color:var(--gris);max-width:560px;margin-top:8px;">Cada temporada sacamos algo nuevo: Día del Niño, Día de las Madres, Halloween… y además abrimos el taller para que vengas a decorar tu propio pastel.</p>
+          <p data-txt="experiencias_texto" style="font-size:14px;color:var(--gris);max-width:560px;margin-top:8px;">Cada temporada sacamos algo nuevo: Día del Niño, Día de las Madres, Halloween… y además abrimos el taller para que vengas a decorar tu propio pastel.</p>
         </div>
       </div>
-      <div class="evento-grid">
+      <div class="evento-grid" id="eventoGrid">
         <div class="evento-card grande">
           <div class="img-evento-taller ev-bg" ></div>
           <div class="ev-label">
@@ -908,12 +908,12 @@
 
   <section class="section no-border band-rosa">
     <div class="container about-grid">
-      <div class="img-equipo-horneando about-img" style=" background-size:cover; background-position:center;"></div>
+      <div class="img-equipo-horneando about-img" id="quienesFoto" style=" background-size:cover; background-position:center;"></div>
       <div class="about-txt">
-        <div class="eyebrow">Quiénes somos</div>
-        <h2 style="font-size:28px; margin:10px 0 16px;">Horneado con oficio, todos los días</h2>
-        <p>En El Taller Repostería creemos que cada pastel, pan o galleta debe sentirse hecho a mano — porque lo es. Trabajamos todos los días desde temprano para que encuentres siempre algo recién salido del horno.</p>
-        <p>Elegimos nuestros ingredientes con cuidado y ajustamos cada receta hasta que queda como nos gustaría comerla nosotros mismos.</p>
+        <div class="eyebrow" data-txt="quienes_etiqueta">Quiénes somos</div>
+        <h2 style="font-size:28px; margin:10px 0 16px;" data-txt="quienes_titulo">Horneado con oficio, todos los días</h2>
+        <div data-txt="quienes_texto" data-parr><p>En El Taller Repostería creemos que cada pastel, pan o galleta debe sentirse hecho a mano — porque lo es. Trabajamos todos los días desde temprano para que encuentres siempre algo recién salido del horno.</p>
+        <p>Elegimos nuestros ingredientes con cuidado y ajustamos cada receta hasta que queda como nos gustaría comerla nosotros mismos.</p></div>
         <a class="btn ghost" href="#" onclick="goPage('pasteles'); return false;">Conoce nuestros materiales →</a>
       </div>
     </div>
@@ -926,7 +926,7 @@
         </div>
         <div class="team-caption">
           <div class="eyebrow">El equipo</div>
-          <p>Las personas que hornean, decoran y arman cada pedido, todos los días.</p>
+          <p data-txt="equipo_texto">Las personas que hornean, decoran y arman cada pedido, todos los días.</p>
           <div class="team-dots" id="teamDots"></div>
         </div>
       </div>
@@ -1010,9 +1010,9 @@
 
   <section class="section materials-band no-border">
     <div class="container">
-      <div class="eyebrow">Responsible Baking</div>
-      <h2 style="font-size:26px; margin:8px 0 18px;">Nuestros materiales</h2>
-      <div class="material-item" style="max-width:680px; padding:28px 32px;">
+      <div class="eyebrow" data-txt="materiales_etiqueta">Responsible Baking</div>
+      <h2 style="font-size:26px; margin:8px 0 18px;" data-txt="materiales_titulo">Nuestros materiales</h2>
+      <div class="material-item" style="max-width:680px; padding:28px 32px;" data-txt="materiales_texto" data-parr>
         <p style="margin:0 0 12px;">Lo primero que queremos que sepas es que la calidad de nuestros pasteles es una de nuestras mayores prioridades.</p>
         <p style="margin:0 0 12px;">Trabajamos con buttercream, una crema elaborada con ingredientes de alta calidad y de origen animal, lo que le da una textura más suave, un sabor más rico y una mejor estabilidad en comparación con otras opciones como la crema chantilly o coberturas vegetales.</p>
         <p style="margin:0 0 12px;">Esto nos permite ofrecerte pasteles no solo visualmente hermosos, sino también deliciosos y con una mejor duración y estructura para cada diseño.</p>
@@ -1230,13 +1230,12 @@ function closeMenu(){
 function initRotator(heroId, interval){
   const hero = document.getElementById(heroId);
   if(!hero) return;
-  const slides = hero.querySelectorAll('.slide');
-  if(slides.length<2) return;
-  let i=0;
   setInterval(()=>{
+    const slides = hero.querySelectorAll('.slide');   // se vuelve a leer: las fotos pueden cambiar desde el panel
+    if(slides.length < 2) return;
+    let i = [...slides].findIndex(x => x.classList.contains('active')); if(i < 0) i = 0;
     slides[i].classList.remove('active');
-    i=(i+1)%slides.length;
-    slides[i].classList.add('active');
+    slides[(i + 1) % slides.length].classList.add('active');
   }, interval);
 }
 initRotator('homeHero', 5000);
@@ -1287,9 +1286,9 @@ function renderGrid(containerId, items, tipo){
   if(!el) return;
   el.innerHTML = items.map(p => `
     <div class="product-card card">
-      <div class="product-img ${p.img ? 'img-'+p.img : ''}">
+      <div class="product-img ${p.img && !p.fotoUrl ? 'img-'+p.img : ''}${p.fotoUrl ? ' ft ft-wait' : ''}"${p.fotoUrl ? ` data-foto="${p.fotoUrl}" role="img" aria-label="${esc(p.nombre)}"` : ''}>
         ${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}
-        ${p.img ? '' : 'El Taller'}
+        ${(p.img || p.fotoUrl) ? '' : 'El Taller'}
       </div>
       <div class="product-info">
         <h3>${esc(p.nombre)}</h3>
@@ -1457,7 +1456,7 @@ function renderSampler(){
     ...DESAYUNOS.filter(p => p.img || p.fotoUrl).map(p => ({p, tag:'Desayuno', accion: p.ref ? '' : `cotizarCard(${CARDS.push(p) - 1})`})),
     ...bowls.map(p => ({p, tag:'Bowl', accion:`goPage('menu')`}))
   ];
-  const pas = (sinHoy ? pasteles.filter(p => p.img) : pasteles.slice(0, 1))
+  const pas = (sinHoy ? pasteles.filter(p => p.img || p.fotoUrl) : pasteles.slice(0, 1))
     .map(p => ({p:{...p, desde:true}, tag:'Pastel por pedido', accion:`goPage('pasteles')`, cta:'Ver y personalizar'}));
   const muestra = sinHoy ? [...pas, ...fijos] : [...deHoy, ...fijos, ...pas];
   const fila = document.getElementById('samplerRow');
@@ -1832,7 +1831,7 @@ function cargarFotos(){
 }
 new MutationObserver(cargarFotos).observe(document.documentElement, {childList:true, subtree:true});
 function conLimite(prom, ms){ return Promise.race([prom, new Promise((_, no) => setTimeout(() => no(new Error('tiempo')), ms))]); }
-const FOTO_OK = /^(dia|menu)\/[A-Za-z0-9._\/-]+\.(jpg|jpeg|png|webp)$/;
+const FOTO_OK = /^(dia|menu|sitio)\/[A-Za-z0-9._\/-]+\.(jpg|jpeg|png|webp)$/;
 function fotoPublica(path){ return path && FOTO_OK.test(path) ? (SB_CFG.url || SB_URL) + '/storage/v1/object/public/productos/' + path : ''; }
 function fechaMX(){ return new Intl.DateTimeFormat('en-CA', {timeZone:'America/Mexico_City', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date()); }
 const CAT_DIA = {pan:'Pan', galletas:'Galletas', especiales:'Especiales'};
@@ -1845,6 +1844,7 @@ function recalcularPasteles(){
   const tam = steps.find(s => s.key === 'tamano');
   const t0 = tam && tam.options && tam.options.length ? tam.options[0].price : null;
   pasteles.forEach(p => {
+    if(p.precioFijo != null){ p.precio = Number(p.precioFijo); return; }
     const partes = [PRECIO_BASE, precioOpcion('base', p.base), precioOpcion('relleno', p.relleno), precioOpcion('cobertura', p.cobertura), t0];
     p.precio = partes.every(v => v !== null && v !== undefined) ? partes.reduce((a, b) => a + Number(b), 0) : null;
   });
@@ -1902,6 +1902,7 @@ async function cargarDatosReales(){
   stockHoy = stockDiario.concat(menuFijo);
   renderStockTabs(); renderStock(); renderMenuTabs(); renderMenu(); renderSampler(); renderGridsFijos();
   renderPersoPanel(); renderSummary(); actualizarFecha();
+  aplicarContenido();
 }
 
 renderStockTabs(); renderStock(); renderMenuTabs(); renderMenu(); actualizarFecha(); renderSampler();
@@ -2071,6 +2072,84 @@ function renderSummary(){
     ? 'Te lo cotizamos por WhatsApp'
     : (precio>0 ? `$${(precio-150).toLocaleString('es-MX')} - $${(precio+150).toLocaleString('es-MX')} MXN` : '$0 MXN');
 }
+
+/* ============ CONTENIDO EDITABLE DESDE EL PANEL (textos, fotos, experiencias y catálogo) ============
+   Si algo no está en la base de datos, se queda lo que trae la página. */
+const CONT = {textos:{}, fotos:null, exps:null, cat:null};
+async function cargarContenido(){
+  if(!SB) return;
+  try{
+    const [t, f, e, c] = await conLimite(Promise.all([
+      SB.from('sitio_textos').select('clave,valor'),
+      SB.from('sitio_fotos').select('id,grupo,foto_path,img_base,orden').eq('activo', true).order('orden').order('id'),
+      SB.from('experiencias').select('id,sucursal,etiqueta,titulo,texto,foto_path,img_base,desde,hasta,destacada,orden').eq('activo', true).order('destacada', {ascending:false}).order('orden').order('id'),
+      SB.from('catalogo').select('id,tipo,nombre,descripcion,precio,base,relleno,cobertura,badge,foto_path,img_base,diagrama_base,orden,ocultar_en').eq('activo', true).order('orden').order('id')
+    ]), 12000);
+    if(!t.error) (t.data || []).forEach(r => { if(r.valor && r.valor.trim()) CONT.textos[r.clave] = r.valor; });
+    if(!f.error) CONT.fotos = f.data || [];
+    if(!e.error) CONT.exps = e.data || [];
+    if(!c.error && c.data && c.data.length) CONT.cat = c.data;
+  }catch(err){ /* sin conexión: se queda lo de la página */ }
+  aplicarContenido();
+}
+function parrafosHTML(txt, estilo){
+  return String(txt).split(/\n\s*\n/).map(x => x.trim()).filter(Boolean).map(x => `<p${estilo ? ' style="' + estilo + '"' : ''}>${esc(x).replace(/\n/g, '<br>')}</p>`).join('');
+}
+function fondoFoto(r){ return r.foto_path ? fotoPublica(r.foto_path) : ''; }
+function aplicarContenido(){
+  // Textos
+  document.querySelectorAll('[data-txt]').forEach(el => {
+    const v = CONT.textos[el.getAttribute('data-txt')]; if(!v) return;
+    if(el.hasAttribute('data-parr')) el.innerHTML = parrafosHTML(v, el.classList.contains('material-item') ? 'margin:0 0 12px;' : '');
+    else if(el.hasAttribute('data-br')) el.innerHTML = esc(v).replace(/\n/g, '<br>');
+    else el.textContent = v;
+  });
+  // Fotos (solo si el grupo tiene fotos en la base)
+  if(CONT.fotos){
+    const grupo = g => CONT.fotos.filter(x => x.grupo === g && (x.foto_path || x.img_base));
+    const hero = document.getElementById('heroFotos'), fi = grupo('inicio');
+    if(hero && fi.length && hero.dataset.ver !== JSON.stringify(fi)){
+      hero.dataset.ver = JSON.stringify(fi);
+      hero.querySelectorAll('.slide').forEach(x => x.remove());
+      fi.forEach((r, k) => {
+        const d = document.createElement('div');
+        d.className = 'slide' + (k === 0 ? ' active' : '') + (r.foto_path ? '' : ' img-' + r.img_base);
+        if(r.foto_path) d.style.backgroundImage = 'url("' + fondoFoto(r) + '")';
+        hero.insertBefore(d, hero.querySelector('.overlay'));
+      });
+    }
+    const q = document.getElementById('quienesFoto'), fq = grupo('quienes')[0];
+    if(q && fq){ q.className = 'about-img' + (fq.foto_path ? '' : ' img-' + fq.img_base); q.style.backgroundImage = fq.foto_path ? 'url("' + fondoFoto(fq) + '")' : ''; }
+    const eq = document.getElementById('teamRotator'), fe = grupo('equipo');
+    if(eq && fe.length && eq.dataset.ver !== JSON.stringify(fe)){
+      eq.dataset.ver = JSON.stringify(fe);
+      eq.innerHTML = fe.map(r => `<div class="team-slide${r.foto_path ? '' : ' img-' + esc(r.img_base)}"${r.foto_path ? ` style="background-image:url('${fondoFoto(r)}')"` : ''}></div>`).join('');
+      if(window.armarEquipo) armarEquipo();
+    }
+  }
+  // Experiencias de la sucursal elegida, dentro de sus fechas
+  const grid = document.getElementById('eventoGrid');
+  if(grid && CONT.exps){
+    const hoy = fechaMX();
+    const lista = CONT.exps.filter(x => (!x.sucursal || x.sucursal === SUC) && (!x.desde || x.desde <= hoy) && (!x.hasta || x.hasta >= hoy));
+    grid.style.display = lista.length ? '' : 'none';
+    grid.innerHTML = lista.map((x, k) => `<div class="evento-card${k === 0 && x.destacada ? ' grande' : ''}">
+        <div class="ev-bg${x.foto_path ? '' : (x.img_base ? ' img-' + esc(x.img_base) : '')}"${x.foto_path ? ` style="background-image:url('${fondoFoto(x)}');background-size:cover;background-position:center"` : ''}></div>
+        <div class="ev-label">${x.etiqueta ? `<div class="ev-tag">${esc(x.etiqueta)}</div>` : ''}<h3>${esc(x.titulo)}</h3>${x.texto ? `<p>${esc(x.texto)}</p>` : ''}</div>
+      </div>`).join('');
+  }
+  // Catálogo de pasteles, diseños y especiales
+  if(CONT.cat){
+    const ver = r => !(r.ocultar_en || []).includes(SUC);
+    const aObj = r => ({nombre:r.nombre, precio:r.precio == null ? null : Number(r.precio), precioFijo:r.precio, desc:r.descripcion || '', badge:r.badge || '',
+      base:r.base || '', relleno:r.relleno || '', cobertura:r.cobertura || '', img:r.foto_path ? '' : (r.img_base || ''), fotoUrl:fondoFoto(r), diagrama:r.diagrama_base || ''});
+    const llenar = (arr, tipo) => { const nuevos = CONT.cat.filter(r => r.tipo === tipo && ver(r)).map(aObj); arr.splice(0, arr.length, ...nuevos); };
+    llenar(pasteles, 'pastel'); llenar(disenos, 'diseno'); llenar(especiales, 'especial');
+    pasteles.forEach(p => { if(p.precioFijo == null) p.precio = null; });
+    recalcularPasteles(); renderGridsFijos(); renderSampler();
+  }
+}
+cargarContenido();
 
 /* ============ MI PEDIDO: el cliente ve cómo va su pedido ============ */
 const MP_EST = {nuevo:'Recibido', preparando:'En preparación', listo:'Listo para recoger', entregado:'Entregado', cancelado:'Cancelado', vencido:'Cancelado'};
@@ -2300,23 +2379,26 @@ function abrirWhatsapp(msgPlano){
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msgPlano)}`, '_blank', 'noopener,noreferrer'); }
 
 /* ============ INIT ============ */
-/* ============ ROTADOR DEL EQUIPO ============ */
+/* ============ ROTADOR DEL EQUIPO (se rearma si el Administrador cambia las fotos) ============ */
 (function(){
   const wrap = document.getElementById('teamRotator');
   const dotsWrap = document.getElementById('teamDots');
   if(!wrap) return;
-  const slides = [...wrap.querySelectorAll('.team-slide')];
-  slides.forEach(sl => { sl.classList.add('img-' + sl.dataset.img); });
-  dotsWrap.innerHTML = slides.map((_,i)=>`<span class="${i===0?'active':''}" onclick="setTeamSlide(${i})"></span>`).join('');
   let i = 0;
-  window.setTeamSlide = function(n){
-    slides[i].classList.remove('active');
-    dotsWrap.children[i].classList.remove('active');
-    i = n;
-    slides[i].classList.add('active');
-    dotsWrap.children[i].classList.add('active');
+  window.armarEquipo = function(){
+    const slides = [...wrap.querySelectorAll('.team-slide')];
+    slides.forEach((sl, k) => { if(sl.dataset.img) sl.classList.add('img-' + sl.dataset.img); sl.classList.toggle('active', k === 0); });
+    i = 0;
+    dotsWrap.innerHTML = slides.length > 1 ? slides.map((_, k) => `<span class="${k === 0 ? 'active' : ''}" onclick="setTeamSlide(${k})"></span>`).join('') : '';
   };
-  setInterval(()=> setTeamSlide((i+1) % slides.length), 4000);
+  window.setTeamSlide = function(n){
+    const slides = [...wrap.querySelectorAll('.team-slide')]; if(!slides[n]) return;
+    slides.forEach((s, k) => s.classList.toggle('active', k === n));
+    [...dotsWrap.children].forEach((d, k) => d.classList.toggle('active', k === n));
+    i = n;
+  };
+  armarEquipo();
+  setInterval(() => { const n = wrap.querySelectorAll('.team-slide').length; if(n > 1) setTeamSlide((i + 1) % n); }, 4000);
 })();
 
 renderStepsBar(); renderPersoPanel(); renderSummary(); renderBaseBanner();

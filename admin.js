@@ -72,7 +72,7 @@ function horaMX(ts){
 function fechaHoraMX(ts){
   return new Date(ts).toLocaleString('es-MX', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit', timeZone:TZ});
 }
-var FOTO_OK = /^(dia|menu)\/[A-Za-z0-9._\/-]+\.(jpg|jpeg|png|webp)$/;
+var FOTO_OK = /^(dia|menu|sitio)\/[A-Za-z0-9._\/-]+\.(jpg|jpeg|png|webp)$/;
 function fotoUrl(path){
   if(!path || !FOTO_OK.test(path)) return '';
   return SB_URL + '/storage/v1/object/public/' + BUCKET + '/' + path;
@@ -347,7 +347,7 @@ async function accionLogin(a){
 
 /* ================= Pestañas ================= */
 var TABS_EMP = [['dia','Menú del día'],['bebidas','Bebidas y desayunos'],['enlinea','Pedidos en línea'],['pasteles','Pasteles'],['caja','Caja'],['pedidos','Pedidos de pastel'],['ventas','Ventas de hoy'],['corte','Corte']];
-var TABS_ADM = [['resumen','Resumen']].concat(TABS_EMP).concat([['historial','Historial'],['equipo','Equipo'],['sucursales','Sucursales']]);
+var TABS_ADM = [['resumen','Resumen']].concat(TABS_EMP).concat([['historial','Historial'],['equipo','Equipo'],['sucursales','Sucursales'],['pagina','Página'],['experiencias','Experiencias'],['catalogo','Catálogo']]);
 
 function pintarBarra(){
   var who = $('who'), tabs = $('tabs'), tin = $('tabsIn');
@@ -1481,6 +1481,249 @@ Object.assign(E, {enlEstado:enlEstado, enlEntregar:enlEntregar, enlCancelar:enlC
   cargarEnLinea:cargarEnLinea, contarNuevos:contarNuevos});
 })();
 
+/* ================= Bloque 5: Contenido del sitio (solo Administrador) =================
+   Textos y fotos de la página, experiencias y catálogo de pasteles.
+   La página usa lo que hay aquí; si algo se deja vacío, muestra lo original. */
+(function(){
+'use strict';
+var E = window.__ET, sb = E.sb, S = E.S, esc = E.esc, fm = E.fm, num = E.num, val = E.val;
+
+var TXT = [
+  ['inicio_etiqueta', 'Inicio · etiqueta chica', 'El Taller Repostería & Coffee Bar', 1],
+  ['inicio_titulo', 'Inicio · título (Enter = salto de línea)', 'Todo lo que horneamos,\nhecho para compartir', 2],
+  ['inicio_texto', 'Inicio · texto', 'Pasteles, pan, galletas y café — elige un diseño o crea el tuyo, y cotiza directo por WhatsApp.', 2],
+  ['quienes_etiqueta', 'Quiénes somos · etiqueta', 'Quiénes somos', 1],
+  ['quienes_titulo', 'Quiénes somos · título', 'Horneado con oficio, todos los días', 1],
+  ['quienes_texto', 'Quiénes somos · texto (deja una línea en blanco entre párrafos)', 'En El Taller Repostería creemos que cada pastel, pan o galleta debe sentirse hecho a mano — porque lo es. Trabajamos todos los días desde temprano para que encuentres siempre algo recién salido del horno.\n\nElegimos nuestros ingredientes con cuidado y ajustamos cada receta hasta que queda como nos gustaría comerla nosotros mismos.', 5],
+  ['equipo_texto', 'El equipo · texto', 'Las personas que hornean, decoran y arman cada pedido, todos los días.', 2],
+  ['experiencias_texto', 'Temporadas y experiencias · texto de arriba', 'Cada temporada sacamos algo nuevo: Día del Niño, Día de las Madres, Halloween… y además abrimos el taller para que vengas a decorar tu propio pastel.', 3],
+  ['materiales_etiqueta', 'Materiales · etiqueta', 'Responsible Baking', 1],
+  ['materiales_titulo', 'Materiales · título', 'Nuestros materiales', 1],
+  ['materiales_texto', 'Materiales · texto (deja una línea en blanco entre párrafos)', 'Lo primero que queremos que sepas es que la calidad de nuestros pasteles es una de nuestras mayores prioridades.\n\nTrabajamos con buttercream, una crema elaborada con ingredientes de alta calidad y de origen animal, lo que le da una textura más suave, un sabor más rico y una mejor estabilidad en comparación con otras opciones como la crema chantilly o coberturas vegetales.\n\nEsto nos permite ofrecerte pasteles no solo visualmente hermosos, sino también deliciosos y con una mejor duración y estructura para cada diseño.\n\nCada pastel está hecho con dedicación, cuidando cada detalle para que tu experiencia sea tan especial como el momento que estás celebrando.', 7]
+];
+var GRUPOS = [['inicio', 'Fotos del inicio', 'Van rotando en la portada.'], ['quienes', 'Foto de "Quiénes somos"', 'Se muestra la primera.'], ['equipo', 'Fotos del equipo', 'Van rotando junto al texto del equipo.']];
+var TIPOS = [['pastel', 'Pasteles'], ['diseno', 'Diseños'], ['especial', 'Especiales']];
+
+function aviso(t){ return '<p style="margin:0 0 14px;color:#5c4f4c">' + t + '</p>'; }
+function miniFoto(r, nombre){
+  if(r.foto_path) return E.phHTML(nombre, r.foto_path);
+  return '<div class="ph" aria-hidden="true" style="font-size:11px;text-align:center;line-height:1.1">Foto<br>original</div>';
+}
+function flechas(tabla, id){
+  return '<button class="btn-p btn-s" data-a="ctMover" data-t="' + tabla + '" data-id="' + id + '" data-d="-1" aria-label="Subir">↑</button>' +
+         '<button class="btn-p btn-s" data-a="ctMover" data-t="' + tabla + '" data-id="' + id + '" data-d="1" aria-label="Bajar">↓</button>';
+}
+function confirmarBorrar(clave, tabla, id, nombre){
+  if(S.abierto !== clave) return '';
+  return '<div class="inline">¿Borrar <b>' + esc(nombre) + '</b>? No se puede deshacer.<div class="acts"><button class="btn-o" data-a="cerrar">No</button>' +
+    '<button class="btn-r" data-a="ctBorrar" data-t="' + tabla + '" data-id="' + id + '">Sí, borrar</button></div></div>';
+}
+var TABLAS = {sitio_fotos:1, experiencias:1, catalogo:1};
+function filas(tabla){ return tabla === 'sitio_fotos' ? S.cFotos : tabla === 'experiencias' ? S.cExp : S.cCat; }
+
+/* ---------- Página: textos y fotos ---------- */
+async function cargarPagina(){
+  var t = await sb.from('sitio_textos').select('clave,valor'); if(t.error) throw t.error;
+  S.cTxt = {}; (t.data || []).forEach(function(r){ S.cTxt[r.clave] = r.valor; });
+  var f = await sb.from('sitio_fotos').select('*').order('orden').order('id'); if(f.error) throw f.error;
+  S.cFotos = f.data || [];
+}
+function vistaPagina(){
+  var h = '<h2 style="margin-bottom:6px">Página</h2>' + aviso('Cambia los textos y las fotos de la página. Si borras un texto completo, la página vuelve a mostrar el original.');
+  h += '<div class="box"><h3>Textos</h3><div class="in">';
+  TXT.forEach(function(x){
+    var v = (S.cTxt && S.cTxt[x[0]] != null && S.cTxt[x[0]] !== '') ? S.cTxt[x[0]] : x[2];
+    h += '<div class="fld"><label for="tx_' + x[0] + '">' + esc(x[1]) + '</label>' +
+      (x[3] > 1 ? '<textarea id="tx_' + x[0] + '" rows="' + x[3] + '" maxlength="3000" style="height:auto;min-height:' + (x[3] * 24 + 20) + 'px">' + esc(v) + '</textarea>'
+                : '<input id="tx_' + x[0] + '" type="text" maxlength="120" value="' + esc(v) + '">') + '</div>';
+  });
+  h += '<div class="acts"><button class="btn-r" data-a="ctTextos">Guardar textos</button></div></div></div>';
+  GRUPOS.forEach(function(g){
+    var fs = S.cFotos.filter(function(f){ return f.grupo === g[0]; });
+    h += '<div class="box"><h3>' + g[1] + ' <span class="tag">' + fs.length + '</span></h3><div class="in" style="padding-top:6px">' + aviso(g[2] + ' Si quitas todas, se muestran las originales.') +
+      '<button class="btn-y btn-s" data-a="abrir" data-k="cf:' + g[0] + '">+ Agregar foto</button></div>';
+    if(S.abierto === 'cf:' + g[0]) h += '<div class="inline"><div class="fld"><label for="cfFoto">Foto</label><input id="cfFoto" type="file" accept="image/*"></div>' +
+      '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="ctFotoNueva" data-g="' + g[0] + '">Subir foto</button></div></div>';
+    fs.forEach(function(f, k){
+      h += '<div class="row' + (f.activo ? '' : ' off') + '">' + miniFoto(f, g[1]) + '<div class="nm"><b>Foto ' + (k + 1) + '</b><small>' + (f.foto_path ? 'Subida desde el panel' : 'Foto original de la página') + '</small></div>' +
+        '<div class="ctl">' + flechas('sitio_fotos', f.id) + '<button class="btn-o btn-s" data-a="abrir" data-k="bf:' + f.id + '">Quitar</button></div>' +
+        confirmarBorrar('bf:' + f.id, 'sitio_fotos', f.id, 'la foto ' + (k + 1)) + '</div>';
+    });
+    h += '</div>';
+  });
+  return h;
+}
+async function guardarTextos(){
+  var filasTxt = TXT.map(function(x){
+    var v = val('tx_' + x[0]).replace(/\r/g, '');
+    return {clave:x[0], valor: v.trim() === x[2].trim() ? '' : v.trim(), actualizado: new Date().toISOString()};
+  }).filter(function(r){ return (S.cTxt[r.clave] || '') !== r.valor; });
+  if(!filasTxt.length){ E.ok('No había cambios en los textos.'); return; }
+  var r = await sb.from('sitio_textos').upsert(filasTxt, {onConflict:'clave'}); if(r.error) throw r.error;
+  E.ok('Textos guardados. Ya se ven en la página.');
+}
+async function fotoNueva(grupo){
+  if(['inicio','quienes','equipo'].indexOf(grupo) < 0) return;
+  var path = await E.subirFoto('cfFoto', 'sitio'); if(!path) throw new Error('Elige una foto.');
+  var ult = S.cFotos.filter(function(f){ return f.grupo === grupo; }).reduce(function(m, f){ return Math.max(m, f.orden || 0); }, 0);
+  var r = await sb.from('sitio_fotos').insert({grupo:grupo, foto_path:path, orden:ult + 10}); if(r.error) throw r.error;
+  S.abierto = null; E.ok('Foto agregada.');
+}
+
+/* ---------- Experiencias ---------- */
+async function cargarExp(){
+  var r = await sb.from('experiencias').select('*').order('destacada', {ascending:false}).order('orden').order('id'); if(r.error) throw r.error;
+  S.cExp = r.data || [];
+}
+function expForm(x){
+  var e = x || {};
+  var sucs = '<option value="">Todas las sucursales</option>' + S.sucs.map(function(s){ return '<option value="' + esc(s.id) + '"' + (e.sucursal === s.id ? ' selected' : '') + '>' + esc(s.nombre) + '</option>'; }).join('');
+  return '<div class="' + (x ? 'inline' : 'form') + '">' + (x ? '' : '<h3>Nueva experiencia</h3>') +
+    '<div class="grid2"><div class="fld"><label for="exT">Título</label><input id="exT" type="text" maxlength="80" value="' + esc(e.titulo) + '"></div>' +
+    '<div class="fld"><label for="exE">Etiqueta (ej. Taller, Temporada)</label><input id="exE" type="text" maxlength="40" value="' + esc(e.etiqueta) + '"></div></div>' +
+    '<div class="fld"><label for="exX">Texto (opcional)</label><textarea id="exX" maxlength="400">' + esc(e.texto) + '</textarea></div>' +
+    '<div class="grid2"><div class="fld"><label for="exS">Sucursal</label><select id="exS">' + sucs + '</select></div>' +
+    '<div class="fld"><label><input id="exD" type="checkbox"' + (e.destacada ? ' checked' : '') + '> Destacada (sale grande)</label></div></div>' +
+    '<div class="grid2"><div class="fld"><label for="exI">Se muestra desde (opcional)</label><input id="exI" type="date" value="' + esc(e.desde) + '"></div>' +
+    '<div class="fld"><label for="exF">Se oculta después del (opcional)</label><input id="exF" type="date" value="' + esc(e.hasta) + '"></div></div>' +
+    '<div class="fld"><label for="exFoto">' + (x && (x.foto_path || x.img_base) ? 'Cambiar foto' : 'Foto') + '</label><input id="exFoto" type="file" accept="image/*"></div>' +
+    '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="ctExpGuardar"' + (x ? ' data-id="' + x.id + '"' : '') + '>Guardar</button></div></div>';
+}
+function vistaExp(){
+  var hoy = S.hoy;
+  var h = '<h2 style="margin-bottom:6px">Experiencias</h2>' + aviso('Talleres, temporadas y eventos que salen en la portada. Con las fechas se muestran y se ocultan solos.');
+  h += '<div class="box"><div class="in" style="padding-top:12px"><button class="btn-y btn-s" data-a="abrir" data-k="exNueva">+ Agregar experiencia</button></div>';
+  if(S.abierto === 'exNueva') h += '<div style="padding:0 16px 12px">' + expForm(null) + '</div>';
+  if(!S.cExp.length) h += '<div class="empty">Todavía no hay experiencias.</div>';
+  S.cExp.forEach(function(x){
+    var estado = !x.activo ? 'Oculta' : (x.hasta && x.hasta < hoy) ? 'Ya terminó' : (x.desde && x.desde > hoy) ? 'Próximamente' : 'Visible';
+    var fechas = (x.desde || x.hasta) ? ' · ' + (x.desde ? 'del ' + x.desde : '') + (x.hasta ? ' al ' + x.hasta : '') : '';
+    h += '<div class="row' + (estado === 'Visible' ? '' : ' off') + '">' + miniFoto(x, x.titulo) +
+      '<div class="nm"><b>' + esc(x.titulo) + (x.destacada ? ' <span class="tag y">Destacada</span>' : '') + '</b><small>' + esc(x.sucursal ? E.sucNombre(x.sucursal) : 'Todas las sucursales') + esc(fechas) + '</small><small>' + esc(estado) + '</small></div>' +
+      '<div class="ctl"><button class="' + (x.activo ? 'btn-r' : 'btn-o') + ' btn-s" data-a="ctTog" data-t="experiencias" data-id="' + x.id + '">' + (x.activo ? 'Visible' : 'Oculta') + '</button>' +
+      flechas('experiencias', x.id) +
+      '<button class="btn-p btn-s" data-a="abrir" data-k="exE:' + x.id + '">Editar</button><button class="btn-o btn-s" data-a="abrir" data-k="exB:' + x.id + '">Borrar</button></div>';
+    if(S.abierto === 'exE:' + x.id) h += expForm(x);
+    h += confirmarBorrar('exB:' + x.id, 'experiencias', x.id, x.titulo) + '</div>';
+  });
+  return h + '</div>';
+}
+async function expGuardar(id){
+  var titulo = val('exT').replace(/\s+/g, ' ').trim();
+  if(titulo.length < 2) throw new Error('Escribe el título.');
+  var d = {titulo:titulo, etiqueta:val('exE').trim() || null, texto:val('exX').trim() || null, sucursal:val('exS') || null,
+    destacada:E.checked('exD'), desde:val('exI') || null, hasta:val('exF') || null};
+  if(d.desde && d.hasta && d.hasta < d.desde) throw new Error('La fecha de fin debe ser después del inicio.');
+  var foto = await E.subirFoto('exFoto', 'sitio'); if(foto) d.foto_path = foto;
+  var r;
+  if(id) r = await sb.from('experiencias').update(d).eq('id', id);
+  else { if(!foto) throw new Error('Agrega una foto para la experiencia.'); d.orden = S.cExp.reduce(function(m, x){ return Math.max(m, x.orden || 0); }, 0) + 10; r = await sb.from('experiencias').insert(d); }
+  if(r.error) throw r.error;
+  S.abierto = null; E.ok(id ? 'Experiencia actualizada.' : 'Experiencia agregada.');
+}
+
+/* ---------- Catálogo ---------- */
+async function cargarCat(){
+  var r = await sb.from('catalogo').select('*').order('orden').order('id'); if(r.error) throw r.error;
+  S.cCat = r.data || [];
+  var o = await sb.from('pastel_opciones').select('paso,nombre').in('paso', ['base','relleno','cobertura']).order('orden');
+  S.cOpc = o.error ? [] : (o.data || []);
+}
+function lista(id, paso){
+  return '<datalist id="' + id + '">' + S.cOpc.filter(function(o){ return o.paso === paso; }).map(function(o){ return '<option value="' + esc(o.nombre) + '">'; }).join('') + '</datalist>';
+}
+function catForm(x, tipo){
+  var e = x || {}; tipo = x ? x.tipo : tipo;
+  var esPastel = tipo === 'pastel';
+  var ocultos = e.ocultar_en || [];
+  return '<div class="' + (x ? 'inline' : 'form') + '">' + (x ? '' : '<h3>Agregar a ' + esc(TIPOS.filter(function(t){ return t[0] === tipo; })[0][1]) + '</h3>') +
+    '<div class="grid2"><div class="fld"><label for="caN">Nombre</label><input id="caN" type="text" maxlength="80" value="' + esc(e.nombre) + '"></div>' +
+    '<div class="fld"><label for="caP">' + (esPastel ? 'Precio fijo (vacío = lo calcula el personalizador)' : 'Precio desde') + '</label><input id="caP" type="text" inputmode="decimal" value="' + esc(e.precio) + '"></div></div>' +
+    '<div class="fld"><label for="caD">Descripción</label><textarea id="caD" maxlength="600">' + esc(e.descripcion) + '</textarea></div>' +
+    (esPastel ? '<div class="grid3"><div class="fld"><label for="caB">Bizcocho</label><input id="caB" list="dlB" maxlength="80" value="' + esc(e.base) + '">' + lista('dlB', 'base') + '</div>' +
+      '<div class="fld"><label for="caR">Relleno</label><input id="caR" list="dlR" maxlength="80" value="' + esc(e.relleno) + '">' + lista('dlR', 'relleno') + '</div>' +
+      '<div class="fld"><label for="caC">Cobertura</label><input id="caC" list="dlC" maxlength="80" value="' + esc(e.cobertura) + '">' + lista('dlC', 'cobertura') + '</div></div>' : '') +
+    '<div class="grid2"><div class="fld"><label for="caE">Etiqueta en la foto (opcional, ej. Especialidad)</label><input id="caE" type="text" maxlength="30" value="' + esc(e.badge) + '"></div>' +
+    '<div class="fld"><label for="caFoto">' + (x && (x.foto_path || x.img_base) ? 'Cambiar foto' : 'Foto') + '</label><input id="caFoto" type="file" accept="image/*"></div></div>' +
+    (S.sucs.length > 1 ? '<div class="fld"><label>No mostrar en</label>' + S.sucs.map(function(s){ return '<label style="display:inline-flex;gap:6px;margin-right:14px;font-weight:400"><input type="checkbox" class="caOc" value="' + esc(s.id) + '"' + (ocultos.indexOf(s.id) >= 0 ? ' checked' : '') + '> ' + esc(s.nombre) + '</label>'; }).join('') + '</div>' : '') +
+    '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="ctCatGuardar" data-tipo="' + tipo + '"' + (x ? ' data-id="' + x.id + '"' : '') + '>Guardar</button></div></div>';
+}
+function vistaCat(){
+  var h = '<h2 style="margin-bottom:6px">Catálogo</h2>' + aviso('Los pasteles, diseños y especiales que salen en la página de Pasteles. Los bizcochos, rellenos y coberturas del personalizador se cambian en la pestaña Pasteles.');
+  TIPOS.forEach(function(t){
+    var xs = S.cCat.filter(function(x){ return x.tipo === t[0]; });
+    h += '<div class="box"><h3>' + t[1] + ' <span class="tag">' + xs.length + '</span></h3><div class="in" style="padding-top:6px"><button class="btn-y btn-s" data-a="abrir" data-k="caN:' + t[0] + '">+ Agregar</button></div>';
+    if(S.abierto === 'caN:' + t[0]) h += '<div style="padding:0 16px 12px">' + catForm(null, t[0]) + '</div>';
+    xs.forEach(function(x){
+      var oc = (x.ocultar_en || []).map(E.sucNombre).join(', ');
+      h += '<div class="row' + (x.activo ? '' : ' off') + '">' + miniFoto(x, x.nombre) +
+        '<div class="nm"><b>' + esc(x.nombre) + (x.badge ? ' <span class="tag y">' + esc(x.badge) + '</span>' : '') + '</b><small>' + (x.precio == null ? (t[0] === 'pastel' ? 'Precio del personalizador' : 'A cotizar') : 'Desde ' + fm(x.precio)) + (oc ? ' · no se muestra en ' + esc(oc) : '') + '</small></div>' +
+        '<div class="ctl"><button class="' + (x.activo ? 'btn-r' : 'btn-o') + ' btn-s" data-a="ctTog" data-t="catalogo" data-id="' + x.id + '">' + (x.activo ? 'Visible' : 'Oculto') + '</button>' +
+        flechas('catalogo', x.id) +
+        '<button class="btn-p btn-s" data-a="abrir" data-k="caE:' + x.id + '">Editar</button><button class="btn-o btn-s" data-a="abrir" data-k="caB:' + x.id + '">Borrar</button></div>';
+      if(S.abierto === 'caE:' + x.id) h += catForm(x);
+      h += confirmarBorrar('caB:' + x.id, 'catalogo', x.id, x.nombre) + '</div>';
+    });
+    h += '</div>';
+  });
+  return h;
+}
+async function catGuardar(id, tipo){
+  if(['pastel','diseno','especial'].indexOf(tipo) < 0) return;
+  var nombre = val('caN').replace(/\s+/g, ' ').trim();
+  if(nombre.length < 2) throw new Error('Escribe el nombre.');
+  var p = val('caP').trim(), precio = p === '' ? null : num(p);
+  if(precio !== null && (isNaN(precio) || precio < 0)) throw new Error('Precio inválido.');
+  var d = {nombre:nombre, precio:precio, descripcion:val('caD').trim() || null, badge:val('caE').trim() || null,
+    ocultar_en: Array.prototype.filter.call(document.querySelectorAll('.caOc'), function(c){ return c.checked; }).map(function(c){ return c.value; })};
+  if(tipo === 'pastel'){ d.base = val('caB').trim() || null; d.relleno = val('caR').trim() || null; d.cobertura = val('caC').trim() || null; }
+  var foto = await E.subirFoto('caFoto', 'sitio'); if(foto) d.foto_path = foto;
+  var r;
+  if(id) r = await sb.from('catalogo').update(d).eq('id', id);
+  else { d.tipo = tipo; d.orden = S.cCat.filter(function(x){ return x.tipo === tipo; }).reduce(function(m, x){ return Math.max(m, x.orden || 0); }, 0) + 10; r = await sb.from('catalogo').insert(d); }
+  if(r.error) throw (/duplicate/i.test(r.error.message) ? new Error('Ya existe "' + nombre + '" en esta sección.') : r.error);
+  S.abierto = null; E.ok(id ? 'Guardado.' : nombre + ' agregado al catálogo.');
+}
+
+/* ---------- Comunes: mostrar/ocultar, mover, borrar ---------- */
+async function tog(tabla, id){
+  if(!TABLAS[tabla] || tabla === 'sitio_fotos') return;
+  var x = filas(tabla).filter(function(r){ return String(r.id) === String(id); })[0]; if(!x) return;
+  var r = await sb.from(tabla).update({activo: !x.activo}).eq('id', id); if(r.error) throw r.error;
+}
+async function mover(tabla, id, dir){
+  if(!TABLAS[tabla]) return;
+  var xs = filas(tabla), x = xs.filter(function(r){ return String(r.id) === String(id); })[0]; if(!x) return;
+  var grupo = xs.filter(function(r){ return tabla === 'sitio_fotos' ? r.grupo === x.grupo : tabla === 'catalogo' ? r.tipo === x.tipo : r.destacada === x.destacada; });
+  var i = grupo.indexOf(x), j = i + Number(dir); if(j < 0 || j >= grupo.length) return;
+  // se renumera el grupo completo para que el orden quede limpio
+  var nuevo = grupo.slice(); nuevo.splice(i, 1); nuevo.splice(j, 0, x);
+  for(var k = 0; k < nuevo.length; k++){
+    if(nuevo[k].orden === (k + 1) * 10) continue;
+    var r = await sb.from(tabla).update({orden:(k + 1) * 10}).eq('id', nuevo[k].id); if(r.error) throw r.error;
+  }
+}
+async function borrar(tabla, id){
+  if(!TABLAS[tabla]) return;
+  var r = await sb.from(tabla).delete().eq('id', id); if(r.error) throw r.error;
+  S.abierto = null; E.ok('Borrado.');
+}
+
+E.VISTAS.pagina = vistaPagina; E.CARGAS.pagina = cargarPagina;
+E.VISTAS.experiencias = vistaExp; E.CARGAS.experiencias = cargarExp;
+E.VISTAS.catalogo = vistaCat; E.CARGAS.catalogo = cargarCat;
+S.cTxt = {}; S.cFotos = []; S.cExp = []; S.cCat = []; S.cOpc = [];
+E.ACC_EXTRA = {
+  ctTextos: function(b, correr){ return correr(b, guardarTextos, true); },
+  ctFotoNueva: function(b, correr){ return correr(b, function(){ return fotoNueva(b.getAttribute('data-g')); }, true); },
+  ctExpGuardar: function(b, correr){ return correr(b, function(){ return expGuardar(b.getAttribute('data-id')); }, true); },
+  ctCatGuardar: function(b, correr){ return correr(b, function(){ return catGuardar(b.getAttribute('data-id'), b.getAttribute('data-tipo')); }, true); },
+  ctTog: function(b, correr){ return correr(null, function(){ return tog(b.getAttribute('data-t'), b.getAttribute('data-id')); }, true); },
+  ctMover: function(b, correr){ return correr(null, function(){ return mover(b.getAttribute('data-t'), b.getAttribute('data-id'), b.getAttribute('data-d')); }, true); },
+  ctBorrar: function(b, correr){ return correr(b, function(){ return borrar(b.getAttribute('data-t'), b.getAttribute('data-id')); }, true); }
+};
+})();
+
 /* ================= Bloque 4: eventos ================= */
 (function(){
 'use strict';
@@ -1594,6 +1837,8 @@ var ACC = {
   invCopiar: function(){ if(navigator.clipboard) navigator.clipboard.writeText(S.codigoNuevo).then(function(){ E.ok('Código copiado.'); E.pintar(); }); },
   invWa: function(){ window.open('https://wa.me/?text=' + encodeURIComponent(E.invTexto()), '_blank', 'noopener,noreferrer'); }
 };
+/* Acciones del Bloque 5 (contenido del sitio) */
+Object.keys(E.ACC_EXTRA || {}).forEach(function(k){ ACC[k] = function(b){ return E.ACC_EXTRA[k](b, correr); }; });
 
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-a]');
