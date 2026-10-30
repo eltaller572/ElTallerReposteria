@@ -720,6 +720,37 @@
   .mp-conf .fila{ display:flex; gap:8px; margin-top:8px; } .mp-conf .fila button{ flex:1; }
   .mp-buscar{ margin-top:16px; border-top:2px dashed var(--rosa); padding-top:12px; font-size:14px; }
   .mp-buscar summary{ cursor:pointer; font-weight:700; }
+  /* ===== Merch ===== */
+  .img-merch-bekind{ background-image:url("merch-bekind.webp"); background-size:cover; background-position:center; }
+  .merch-row{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:22px; }
+  .merch-card{ background:#fff; border:2px solid var(--tinta); box-shadow:4px 4px 0 var(--tinta); display:flex; flex-direction:column; min-width:0; }
+  .merch-img{ position:relative; aspect-ratio:4/5; background-color:var(--rosa-suave); background-size:cover; background-position:center; border-bottom:2px solid var(--tinta); display:flex; align-items:center; justify-content:center; font-family:Georgia,serif; font-size:13px; color:var(--rojo-oscuro); }
+  .merch-card.merch-ago .merch-img{ filter:grayscale(.7); opacity:.75; }
+  .merch-badges{ position:absolute; top:10px; left:10px; right:10px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:6px; pointer-events:none; }
+  .merch-badges .badge{ position:static; max-width:100%; overflow-wrap:anywhere; }
+  .merch-badges .badge.ago{ margin-left:auto; background:var(--rojo); }
+  .merch-info{ padding:14px 14px 16px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .merch-info h3{ font-size:18px; line-height:1.25; overflow-wrap:anywhere; }
+  .merch-desc{ font-size:13px; color:var(--gris); line-height:1.45; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .merch-precio{ font-family:Georgia,serif; font-size:19px; font-weight:700; color:var(--rojo); font-variant-numeric:tabular-nums; }
+  .merch-precio small{ font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; font-weight:600; color:var(--gris); }
+  .merch-tallas{ display:flex; flex-wrap:wrap; gap:6px; }
+  .talla{ min-width:44px; min-height:44px; padding:0 10px; background:#fff; color:var(--tinta); border:2px solid var(--tinta); font-weight:700; font-size:14px; touch-action:manipulation; -webkit-user-select:none; user-select:none;
+    transition:transform 120ms cubic-bezier(.23,1,.32,1), background-color 120ms ease, color 120ms ease, border-color 160ms ease, box-shadow 160ms ease; }
+  .talla:active:not(:disabled){ transform:translate(1px,1px); }
+  .merch-tallas.pide .talla:not(:disabled){ border-color:var(--rojo); box-shadow:2px 2px 0 var(--rojo); }
+  #merchSec{ transition:opacity 240ms cubic-bezier(.23,1,.32,1); }
+  @starting-style{ #merchSec{ opacity:0; } }
+  .talla[aria-checked="true"]{ background:var(--rojo); color:#fff; }
+  .talla:disabled{ color:#8a7f7c; border-color:#c9c0bd; text-decoration:line-through; cursor:not-allowed; background:#f6f2f1; }
+  .merch-info .add-btns{ margin-top:auto; padding-top:4px; }
+  .merch-info .add-btn{ white-space:normal; text-align:center; min-width:0; width:100%; }
+  @media (max-width:640px){
+    .merch-row{ display:flex; overflow-x:auto; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; padding:0 6px 10px 0; gap:16px; align-items:flex-start; }
+    .merch-card{ flex:0 0 min(80%, 300px); scroll-snap-align:start; }
+  }
+  @media (max-width:360px){ .merch-card{ flex-basis:88%; } .merch-info{ padding:12px 12px 14px; } }
+  @media (max-width:260px){ .merch-info .add-btn .wa-ico{ display:none; } }
 </style>
 </head>
 <body>
@@ -861,6 +892,20 @@
       </div>
       <div class="sampler-row" id="samplerRow"></div>
       <div class="rot-bar" hidden><button type="button" class="rot-ctl" id="samplerPausa" aria-label="Pausar" aria-pressed="false" onclick="pausarSampler()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></button></div>
+    </div>
+  </section>
+
+  <!-- MERCH: sudaderas, gorras y más (se edita en el panel, pestaña Merch) -->
+  <section class="section band-rosa" id="merchSec" style="display:none">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">Hecho en El Taller</div>
+          <h2>Nuestra merch</h2>
+          <p style="font-size:13.5px;color:var(--gris);max-width:520px;margin-top:8px;">Sudaderas, gorras y más con el estilo de El Taller. Elige tu talla, pídela por WhatsApp y recógela en tu sucursal.</p>
+        </div>
+      </div>
+      <div class="merch-row" id="merchRow"></div>
     </div>
   </section>
 
@@ -2075,20 +2120,22 @@ function renderSummary(){
 
 /* ============ CONTENIDO EDITABLE DESDE EL PANEL (textos, fotos, experiencias y catálogo) ============
    Si algo no está en la base de datos, se queda lo que trae la página. */
-const CONT = {textos:{}, fotos:null, exps:null, cat:null};
+const CONT = {textos:{}, fotos:null, exps:null, cat:null, merch:null};
 async function cargarContenido(){
   if(!SB) return;
   try{
-    const [t, f, e, c] = await conLimite(Promise.all([
+    const [t, f, e, c, m] = await conLimite(Promise.all([
       SB.from('sitio_textos').select('clave,valor'),
       SB.from('sitio_fotos').select('id,grupo,foto_path,img_base,orden').eq('activo', true).order('orden').order('id'),
       SB.from('experiencias').select('id,sucursal,etiqueta,titulo,texto,foto_path,img_base,desde,hasta,destacada,orden').eq('activo', true).order('destacada', {ascending:false}).order('orden').order('id'),
-      SB.from('catalogo').select('id,tipo,nombre,descripcion,precio,base,relleno,cobertura,badge,foto_path,img_base,diagrama_base,orden,ocultar_en').eq('activo', true).order('orden').order('id')
+      SB.from('catalogo').select('id,tipo,nombre,descripcion,precio,base,relleno,cobertura,badge,foto_path,img_base,diagrama_base,orden,ocultar_en').eq('activo', true).order('orden').order('id'),
+      SB.from('mercancia').select('id,nombre,descripcion,precio,etiqueta,tallas,agotadas,agotado,foto_path,img_base,orden,ocultar_en').eq('activo', true).order('orden').order('id')
     ]), 12000);
     if(!t.error) (t.data || []).forEach(r => { if(r.valor && r.valor.trim()) CONT.textos[r.clave] = r.valor; });
     if(!f.error) CONT.fotos = f.data || [];
     if(!e.error) CONT.exps = e.data || [];
     if(!c.error && c.data && c.data.length) CONT.cat = c.data;
+    if(!m.error) CONT.merch = m.data || [];
   }catch(err){ /* sin conexión: se queda lo de la página */ }
   aplicarContenido();
 }
@@ -2148,6 +2195,59 @@ function aplicarContenido(){
     pasteles.forEach(p => { if(p.precioFijo == null) p.precio = null; });
     recalcularPasteles(); renderGridsFijos(); renderSampler();
   }
+  renderMerch();
+}
+/* ============ MERCH: se pide por WhatsApp a la sucursal elegida ============ */
+const MERCH_TALLA = {};   // talla elegida por producto
+function merchPrecio(n){ n = Number(n); return '$' + n.toLocaleString('es-MX', {minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2}); }
+function merchVisibles(){ return (CONT.merch || []).filter(x => !(x.ocultar_en || []).includes(SUC)); }
+function merchHay(x){ const t = x.tallas || [], a = x.agotadas || []; return !x.agotado && (!t.length || t.some(s => !a.includes(s))); }
+function renderMerch(){
+  const sec = document.getElementById('merchSec'), fila = document.getElementById('merchRow');
+  if(!sec || !fila) return;
+  const lista = merchVisibles();
+  sec.style.display = lista.length ? '' : 'none';
+  if(!lista.length){ fila.innerHTML = ''; return; }
+  fila.innerHTML = lista.map(x => {
+    const id = Number(x.id), hay = merchHay(x), foto = fondoFoto(x);
+    const base = !foto && x.img_base && /^[a-z0-9-]+$/.test(x.img_base) ? ' img-' + x.img_base : '';
+    const tallas = (x.tallas || []).map(t => {
+      const ago = (x.agotadas || []).includes(t) || x.agotado;
+      return `<button type="button" class="talla" role="radio" aria-checked="${MERCH_TALLA[id] === t && !ago}" data-t="${esc(t)}"${ago ? ' disabled aria-label="' + esc(t) + ' agotada"' : ''} onclick="elegirTalla(${id}, this)">${esc(t)}</button>`;
+    }).join('');
+    return `<article class="merch-card${hay ? '' : ' merch-ago'}">
+      <div class="merch-img${base}${foto ? ' ft ft-wait' : ''}"${foto ? ` data-foto="${foto}"` : ''} role="img" aria-label="${esc(x.nombre)}">${(foto || base) ? '' : 'El Taller'}${(x.etiqueta || !hay) ? `<div class="merch-badges">${x.etiqueta ? `<span class="badge">${esc(x.etiqueta)}</span>` : ''}${hay ? '' : '<span class="badge ago">Agotado</span>'}</div>` : ''}</div>
+      <div class="merch-info">
+        <h3>${esc(x.nombre)}</h3>
+        ${x.descripcion ? `<p class="merch-desc">${esc(x.descripcion)}</p>` : ''}
+        <div class="merch-precio">${x.precio == null ? '<small>Pregunta el precio por WhatsApp</small>' : merchPrecio(x.precio) + ' <small>MXN</small>'}</div>
+        ${tallas ? `<div class="merch-tallas" role="radiogroup" aria-label="Talla de ${esc(x.nombre)}">${tallas}</div>` : ''}
+        <div class="add-btns"><button type="button" class="add-btn" onclick="pedirMerch(${id})"${hay ? '' : ' disabled'}>${hay ? '<svg class="wa-ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.47-.88-.78-1.47-1.75-1.64-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.47s1.06 2.86 1.21 3.06c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.69.25-1.28.17-1.41-.07-.13-.27-.2-.57-.35zM12.04 2C6.55 2 2.1 6.45 2.1 11.94c0 1.76.46 3.4 1.27 4.83L2 22l5.36-1.4a9.9 9.9 0 004.68 1.19h.01c5.48 0 9.94-4.45 9.94-9.94C21.99 6.45 17.53 2 12.04 2zm0 18.08h-.01a8.25 8.25 0 01-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 01-1.26-4.38c0-4.56 3.71-8.27 8.27-8.27 2.21 0 4.28.86 5.84 2.42a8.2 8.2 0 012.42 5.85c0 4.56-3.71 8.24-8.27 8.24z"/></svg> Pedir por WhatsApp' : 'Agotado'}</button></div>
+      </div>
+    </article>`;
+  }).join('');
+}
+function elegirTalla(id, b){
+  MERCH_TALLA[id] = b.dataset.t;
+  b.parentElement.classList.remove('pide');
+  b.parentElement.querySelectorAll('.talla').forEach(x => x.setAttribute('aria-checked', String(x === b)));
+}
+function pedirMerch(id){
+  const x = merchVisibles().find(r => Number(r.id) === Number(id)); if(!x || !merchHay(x)) return;
+  const disp = (x.tallas || []).filter(t => !(x.agotadas || []).includes(t));
+  let talla = MERCH_TALLA[id];
+  if(disp.length === 1 && !talla) talla = disp[0];
+  if(disp.length && !disp.includes(talla)){
+    showToast('Elige tu talla primero');
+    const b = document.querySelector(`.talla[onclick^="elegirTalla(${Number(id)},"]:not(:disabled)`);
+    if(b){ const g = b.parentElement; g.classList.add('pide'); clearTimeout(g._t); g._t = setTimeout(() => g.classList.remove('pide'), 1600); b.focus({preventScroll:true}); }
+    return;
+  }
+  const s = sucDatos();
+  const pr = x.precio == null ? '' : ` (${merchPrecio(x.precio)} MXN)`;
+  const nom = String(x.nombre).replace(/[*_~`]/g, '').trim();   // sin símbolos que WhatsApp usa para dar formato
+  abrirWhatsapp(`Hola! Vi en la página la merch *${nom}*${talla ? ' en talla ' + talla : ''}${pr}. ¿La tienen disponible para recogerla${s ? ' en ' + s.nombre : ''}?`);
+  showToast('Abriendo WhatsApp...');
 }
 cargarContenido();
 
@@ -2376,7 +2476,7 @@ function cotizarPersonalizado(){
 function abrirWhatsapp(msgPlano){
   const s = sucDatos();
   if(!WA_PROPIO && s){ msgPlano = '(Escribo por ' + s.nombre + ') ' + msgPlano; showToast('Esta sucursal aún no tiene WhatsApp: te atiende ' + sucGeneralNombre() + '.'); }
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msgPlano)}`, '_blank', 'noopener,noreferrer'); }
+  window.open(`https://wa.me/${String(WHATSAPP_NUMBER).replace(/\D/g, '')}?text=${encodeURIComponent(msgPlano)}`, '_blank', 'noopener,noreferrer'); }
 
 /* ============ INIT ============ */
 /* ============ ROTADOR DEL EQUIPO (se rearma si el Administrador cambia las fotos) ============ */

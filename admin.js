@@ -347,7 +347,7 @@ async function accionLogin(a){
 
 /* ================= Pestañas ================= */
 var TABS_EMP = [['dia','Menú del día'],['bebidas','Bebidas y desayunos'],['enlinea','Pedidos en línea'],['pasteles','Pasteles'],['caja','Caja'],['pedidos','Pedidos de pastel'],['ventas','Ventas de hoy'],['corte','Corte']];
-var TABS_ADM = [['resumen','Resumen']].concat(TABS_EMP).concat([['historial','Historial'],['equipo','Equipo'],['sucursales','Sucursales'],['pagina','Página'],['experiencias','Experiencias'],['catalogo','Catálogo']]);
+var TABS_ADM = [['resumen','Resumen']].concat(TABS_EMP).concat([['historial','Historial'],['equipo','Equipo'],['sucursales','Sucursales'],['pagina','Página'],['experiencias','Experiencias'],['catalogo','Catálogo'],['merch','Merch']]);
 
 function pintarBarra(){
   var who = $('who'), tabs = $('tabs'), tin = $('tabsIn');
@@ -583,7 +583,7 @@ function menuForm(m){
     '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="' + (m ? 'menuEdit' : 'menuNuevo') + '"' + (m ? ' data-id="' + m.id + '"' : '') + '>Guardar</button></div></div>';
 }
 function vistaBebidas(){
-  var h = '<h2 style="margin-bottom:6px">Bebidas y desayunos</h2><p style="margin:0 0 14px;color:#5c4f4c">Los productos de la sección "Desayunos" aparecen en "Nuestra selección de hoy" del sitio (los que tienen foto). Los demás, en el Menú de bebidas.</p>' +
+  var h = '<h2 style="margin-bottom:6px">Bebidas y desayunos</h2><p style="margin:0 0 14px;color:#5c4f4c">Los productos de la sección "Desayunos" aparecen en "Recién salido del horno" del sitio (los que tienen foto). Los demás, en el Menú de bebidas.</p>' +
     '<div class="ctl" style="margin-bottom:14px"><button class="btn-y" data-a="abrir" data-k="nuevoMenu">+ Agregar producto</button></div>';
   if(S.abierto === 'nuevoMenu') h += menuForm(null);
   secciones().forEach(function(sec){
@@ -1722,6 +1722,116 @@ E.ACC_EXTRA = {
   ctMover: function(b, correr){ return correr(null, function(){ return mover(b.getAttribute('data-t'), b.getAttribute('data-id'), b.getAttribute('data-d')); }, true); },
   ctBorrar: function(b, correr){ return correr(b, function(){ return borrar(b.getAttribute('data-t'), b.getAttribute('data-id')); }, true); }
 };
+})();
+
+/* ================= Bloque 6: Merch (solo Administrador) =================
+   Sudaderas, gorras y más. Se piden por WhatsApp desde la página. */
+(function(){
+'use strict';
+var E = window.__ET, sb = E.sb, S = E.S, esc = E.esc, fm = E.fm, num = E.num, val = E.val;
+var TALLAS = ['XS','S','M','L','XL','XXL','Unitalla'];
+var FOTOS_BASE = {'merch-bekind':'merch-bekind.webp'};   // fotos que vienen con la página
+
+function fotoMerch(x){
+  if(x.foto_path) return E.phHTML(x.nombre, x.foto_path);
+  var u = FOTOS_BASE[x.img_base];
+  return u ? '<div class="ph" style="background-image:url(\'' + u + '\')" aria-hidden="true"></div>' : E.phHTML(x.nombre, null);
+}
+function porId(id){ return S.mMer.filter(function(r){ return String(r.id) === String(id); })[0]; }
+
+async function cargarMerch(){
+  var r = await sb.from('mercancia').select('*').order('orden').order('id'); if(r.error) throw r.error;
+  S.mMer = r.data || [];
+}
+function merchForm(x){
+  var e = x || {}, tallas = e.tallas || [], ago = e.agotadas || [], ocultos = e.ocultar_en || [];
+  var sel = TALLAS.map(function(t, i){
+    var v = tallas.indexOf(t) < 0 ? '' : (ago.indexOf(t) < 0 ? 'si' : 'ago');
+    return '<div class="fld" style="margin-top:0"><label for="mrT' + i + '">' + esc(t) + '</label><select id="mrT' + i + '">' +
+      '<option value=""' + (v === '' ? ' selected' : '') + '>No</option>' +
+      '<option value="si"' + (v === 'si' ? ' selected' : '') + '>Sí, hay</option>' +
+      '<option value="ago"' + (v === 'ago' ? ' selected' : '') + '>Agotada</option></select></div>';
+  }).join('');
+  return '<div class="' + (x ? 'inline' : 'form') + '">' + (x ? '' : '<h3>Nuevo producto de merch</h3>') +
+    '<div class="grid2"><div class="fld"><label for="mrN">Nombre</label><input id="mrN" type="text" maxlength="80" value="' + esc(e.nombre) + '" placeholder="Ej. Sudadera Be Kind"></div>' +
+    '<div class="fld"><label for="mrP">Precio (vacío = pregunta por WhatsApp)</label><input id="mrP" type="text" inputmode="decimal" value="' + esc(e.precio) + '"></div></div>' +
+    '<div class="fld"><label for="mrD">Descripción (opcional)</label><textarea id="mrD" maxlength="300">' + esc(e.descripcion) + '</textarea></div>' +
+    '<div class="grid2"><div class="fld"><label for="mrE">Etiqueta en la foto (opcional, ej. Nuevo)</label><input id="mrE" type="text" maxlength="20" value="' + esc(e.etiqueta) + '"></div>' +
+    '<div class="fld"><label for="mrFoto">' + (x && (x.foto_path || x.img_base) ? 'Cambiar foto' : 'Foto') + '</label><input id="mrFoto" type="file" accept="image/*"></div></div>' +
+    '<div class="fld"><label>Tallas</label><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">' + sel + '</div>' +
+    '<div class="note">Si no lleva talla (ej. termo o tote bag), deja todas en "No".</div></div>' +
+    (S.sucs.length > 1 ? '<div class="fld"><label>No mostrar en</label>' + S.sucs.map(function(s){ return '<label style="display:inline-flex;gap:6px;margin-right:14px;font-weight:400"><input type="checkbox" class="mrOc" value="' + esc(s.id) + '"' + (ocultos.indexOf(s.id) >= 0 ? ' checked' : '') + '> ' + esc(s.nombre) + '</label>'; }).join('') + '</div>' : '') +
+    '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="mrGuardar"' + (x ? ' data-id="' + x.id + '"' : '') + '>Guardar</button></div></div>';
+}
+function vistaMerch(){
+  var h = '<h2 style="margin-bottom:6px">Merch</h2><p style="margin:0 0 14px;color:#5c4f4c">Sudaderas, gorras y todo lo que vayan sacando. Sale en la portada de la página y los clientes la piden por WhatsApp a su sucursal.</p>';
+  h += '<div class="box"><div class="in" style="padding-top:12px"><button class="btn-y btn-s" data-a="abrir" data-k="mrNuevo">+ Agregar producto</button></div>';
+  if(S.abierto === 'mrNuevo') h += '<div style="padding:0 16px 12px">' + merchForm(null) + '</div>';
+  if(!S.mMer.length) h += '<div class="empty">Todavía no hay merch. Agrega el primer producto con su foto.</div>';
+  S.mMer.forEach(function(x){
+    var t = (x.tallas || []).filter(function(s){ return (x.agotadas || []).indexOf(s) < 0; });
+    var a = (x.tallas || []).filter(function(s){ return (x.agotadas || []).indexOf(s) >= 0; });
+    var oc = (x.ocultar_en || []).map(E.sucNombre).join(', ');
+    var info = (x.precio == null ? 'Sin precio (se pregunta por WhatsApp)' : fm(x.precio)) +
+      ((x.tallas || []).length ? ' · Tallas: ' + (t.length ? t.join(', ') : 'ninguna disponible') + (a.length ? ' (agotada: ' + a.join(', ') + ')' : '') : '') +
+      (oc ? ' · no se muestra en ' + oc : '');
+    h += '<div class="row' + (x.activo && !x.agotado ? '' : ' off') + '">' + fotoMerch(x) +
+      '<div class="nm"><b>' + esc(x.nombre) + (x.etiqueta ? ' <span class="tag y">' + esc(x.etiqueta) + '</span>' : '') + (x.agotado ? ' <span class="tag">Agotado</span>' : '') + '</b><small>' + esc(info) + '</small></div>' +
+      '<div class="ctl"><button class="' + (x.activo ? 'btn-r' : 'btn-o') + ' btn-s" data-a="mrTog" data-c="activo" data-id="' + x.id + '">' + (x.activo ? 'Visible' : 'Oculto') + '</button>' +
+      '<button class="btn-o btn-s" data-a="mrTog" data-c="agotado" data-id="' + x.id + '">' + (x.agotado ? 'Ya hay otra vez' : 'Marcar agotado') + '</button>' +
+      '<button class="btn-p btn-s" data-a="mrMover" data-id="' + x.id + '" data-d="-1" aria-label="Subir">↑</button>' +
+      '<button class="btn-p btn-s" data-a="mrMover" data-id="' + x.id + '" data-d="1" aria-label="Bajar">↓</button>' +
+      '<button class="btn-p btn-s" data-a="abrir" data-k="mrE:' + x.id + '">Editar</button><button class="btn-o btn-s" data-a="abrir" data-k="mrB:' + x.id + '">Borrar</button></div>';
+    if(S.abierto === 'mrE:' + x.id) h += merchForm(x);
+    if(S.abierto === 'mrB:' + x.id) h += '<div class="inline">¿Borrar <b>' + esc(x.nombre) + '</b>? No se puede deshacer. Si solo se acabó, mejor usa "Agotado".<div class="acts"><button class="btn-o" data-a="cerrar">No</button>' +
+      '<button class="btn-r" data-a="mrBorrar" data-id="' + x.id + '">Sí, borrar</button></div></div>';
+    h += '</div>';
+  });
+  return h + '</div>';
+}
+async function guardar(id){
+  var nombre = val('mrN').replace(/\s+/g, ' ').trim();
+  if(nombre.length < 2) throw new Error('Escribe el nombre.');
+  var p = val('mrP').trim(), precio = p === '' ? null : num(p);
+  if(precio !== null && (isNaN(precio) || precio <= 0 || precio > 100000)) throw new Error('Revisa el precio: debe ser mayor a $0 y menor a $100,000. Si no tiene precio, déjalo vacío.');
+  var tallas = [], agotadas = [];
+  TALLAS.forEach(function(t, i){ var v = val('mrT' + i); if(v){ tallas.push(t); if(v === 'ago') agotadas.push(t); } });
+  var d = {nombre:nombre, precio:precio, descripcion:val('mrD').trim() || null, etiqueta:val('mrE').trim() || null, tallas:tallas, agotadas:agotadas,
+    ocultar_en: Array.prototype.filter.call(document.querySelectorAll('.mrOc'), function(c){ return c.checked; }).map(function(c){ return c.value; })};
+  var foto = await E.subirFoto('mrFoto', 'sitio'); if(foto){ d.foto_path = foto; d.img_base = null; }
+  var r;
+  if(id) r = await sb.from('mercancia').update(d).eq('id', id);
+  else { if(!foto) throw new Error('Agrega una foto del producto.'); d.orden = S.mMer.reduce(function(m, x){ return Math.max(m, x.orden || 0); }, 0) + 10; r = await sb.from('mercancia').insert(d); }
+  if(r.error) throw (/duplicate/i.test(r.error.message) ? new Error('Ya existe un producto llamado "' + nombre + '".') : r.error);
+  S.abierto = null; E.ok(id ? 'Guardado.' : nombre + ' ya sale en la página.');
+}
+async function tog(id, campo){
+  if(campo !== 'activo' && campo !== 'agotado') return;
+  var x = porId(id); if(!x) return;
+  var d = {}; d[campo] = !x[campo];
+  var r = await sb.from('mercancia').update(d).eq('id', id); if(r.error) throw r.error;
+}
+async function mover(id, dir){
+  var x = porId(id); if(!x) return;
+  var i = S.mMer.indexOf(x), j = i + Number(dir); if(j < 0 || j >= S.mMer.length) return;
+  var nuevo = S.mMer.slice(); nuevo.splice(i, 1); nuevo.splice(j, 0, x);
+  for(var k = 0; k < nuevo.length; k++){
+    if(nuevo[k].orden === (k + 1) * 10) continue;
+    var r = await sb.from('mercancia').update({orden:(k + 1) * 10}).eq('id', nuevo[k].id); if(r.error) throw r.error;
+  }
+}
+async function borrar(id){
+  var r = await sb.from('mercancia').delete().eq('id', id); if(r.error) throw r.error;
+  S.abierto = null; E.ok('Borrado.');
+}
+
+E.VISTAS.merch = vistaMerch; E.CARGAS.merch = cargarMerch;
+S.mMer = [];
+E.ACC_EXTRA = E.ACC_EXTRA || {};
+E.ACC_EXTRA.mrGuardar = function(b, correr){ return correr(b, function(){ return guardar(b.getAttribute('data-id')); }, true); };
+E.ACC_EXTRA.mrTog = function(b, correr){ return correr(null, function(){ return tog(b.getAttribute('data-id'), b.getAttribute('data-c')); }, true); };
+E.ACC_EXTRA.mrMover = function(b, correr){ return correr(null, function(){ return mover(b.getAttribute('data-id'), b.getAttribute('data-d')); }, true); };
+E.ACC_EXTRA.mrBorrar = function(b, correr){ return correr(b, function(){ return borrar(b.getAttribute('data-id')); }, true); };
 })();
 
 /* ================= Bloque 4: eventos ================= */
