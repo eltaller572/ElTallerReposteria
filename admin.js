@@ -248,7 +248,7 @@ async function entrar(){
   if(S.admin && inactivoDemasiado()){ await salir(MSG_INACT); return; }
   marcarActividad();
   try{ await cargarSucursales(); }catch(e){ fallo(e); }
-  S.tab = S.tab || (S.admin ? 'resumen' : 'dia');
+  if(!S.tab || !tabsVisibles().some(function(t){ return t[0] === S.tab; })) S.tab = 'enlinea';
   await cargarTab();
 }
 
@@ -346,8 +346,23 @@ async function accionLogin(a){
 }
 
 /* ================= Pestañas ================= */
-var TABS_EMP = [['dia','Menú del día'],['bebidas','Bebidas y desayunos'],['enlinea','Pedidos en línea'],['pasteles','Pasteles'],['caja','Caja'],['pedidos','Pedidos de pastel'],['ventas','Ventas de hoy'],['corte','Corte']];
-var TABS_ADM = [['resumen','Resumen']].concat(TABS_EMP).concat([['historial','Historial'],['equipo','Equipo'],['sucursales','Sucursales'],['pagina','Página'],['experiencias','Experiencias'],['catalogo','Catálogo'],['merch','Merch']]);
+/* Pestañas agrupadas: arriba van los grupos y, debajo, las partes de cada grupo.
+   [id de la vista, nombre, solo Administrador] */
+var GRUPOS_TAB = [
+  ['Pedidos',  [['enlinea','En línea'],['pedidos','Pedidos de pastel']]],
+  ['Caja',     [['caja','Cobrar'],['ventas','Ventas de hoy'],['corte','Corte']]],
+  ['Menú',     [['dia','Menú del día'],['bebidas','Bebidas y desayunos']]],
+  ['Pasteles', [['catalogo','Catálogo',1],['pasteles','Personalizador']]],
+  ['Merch',    [['merch','Merch',1]]],
+  ['Página',   [['pagina','Textos y fotos',1],['experiencias','Experiencias',1]]],
+  ['Resumen',  [['resumen','Resumen',1],['historial','Historial de cambios',1]]],
+  ['Ajustes',  [['equipo','Equipo',1],['sucursales','Sucursales',1]]]
+];
+function gruposVisibles(){
+  return GRUPOS_TAB.map(function(g){ return [g[0], g[1].filter(function(t){ return S.admin || !t[2]; })]; })
+    .filter(function(g){ return g[1].length; });
+}
+function tabsVisibles(){ return [].concat.apply([], gruposVisibles().map(function(g){ return g[1]; })); }
 
 function pintarBarra(){
   var who = $('who'), tabs = $('tabs'), tin = $('tabsIn');
@@ -359,10 +374,24 @@ function pintarBarra(){
     ? '<label class="suc-sel"><span>Sucursal</span><select id="sucSel" aria-label="Sucursal en la que trabajas">' + S.misSucs.map(function(id){ return '<option value="' + esc(id) + '"' + (id === S.suc ? ' selected' : '') + '>' + esc(sucNombre(id)) + '</option>'; }).join('') + '</select></label>'
     : (S.suc ? '<span class="suc-fija">' + esc(sucNombre(S.suc)) + '</span>' : '');
   who.innerHTML = selSuc + '<span>' + esc(S.perfil.nombre || '') + ' · <b>' + (S.admin ? 'Administrador' : 'Empleado') + '</b></span><button data-a="salir">Salir</button>';
-  var lista = S.admin ? TABS_ADM : TABS_EMP;
-  tin.innerHTML = lista.map(function(t){
-    var badge = (t[0] === 'enlinea' && S.nuevosEnLinea) ? ' <span class="nbadge" aria-label="' + S.nuevosEnLinea + ' nuevos">' + S.nuevosEnLinea + '</span>' : '';
-    return '<button data-a="tab" data-t="' + t[0] + '" data-l="' + esc(t[1]) + '" class="' + (S.tab === t[0] ? 'on' : '') + '">' + t[1] + badge + '</button>'; }).join('');
+  var grupos = gruposVisibles(), actual = null;
+  tin.innerHTML = grupos.map(function(g){
+    var dentro = g[1].some(function(t){ return t[0] === S.tab; });
+    if(dentro) actual = g;
+    var destino = dentro ? S.tab : g[1][0][0];
+    var tieneLinea = g[1].some(function(t){ return t[0] === 'enlinea'; });
+    var badge = (tieneLinea && S.nuevosEnLinea) ? ' <span class="nbadge" aria-label="' + S.nuevosEnLinea + ' nuevos">' + S.nuevosEnLinea + '</span>' : '';
+    return '<button data-a="tab" data-t="' + destino + '" data-l="' + esc(g[0]) + '" class="' + (dentro ? 'on' : '') + '"' + (dentro ? ' aria-current="page"' : '') + '>' + esc(g[0]) + badge + '</button>'; }).join('');
+  var sub = $('subTabs');
+  if(!sub){ sub = document.createElement('div'); sub.id = 'subTabs'; sub.className = 'wrap sub'; tabs.appendChild(sub); }
+  if(actual && actual[1].length > 1){
+    sub.innerHTML = actual[1].map(function(t){
+      var badge = (t[0] === 'enlinea' && S.nuevosEnLinea) ? ' <span class="nbadge">' + S.nuevosEnLinea + '</span>' : '';
+      return '<button data-a="tab" data-t="' + t[0] + '" data-l="' + esc(t[1]) + '" class="' + (S.tab === t[0] ? 'on' : '') + '">' + esc(t[1]) + badge + '</button>'; }).join('');
+    sub.classList.remove('hidden');
+  } else { sub.innerHTML = ''; sub.classList.add('hidden'); }
+  var on = tin.querySelector('.on');   // en el celular, que el grupo actual siempre se vea
+  if(on && (on.offsetLeft < tin.scrollLeft || on.offsetLeft + on.offsetWidth > tin.scrollLeft + tin.clientWidth)) tin.scrollLeft = Math.max(0, on.offsetLeft - 16);
   document.title = (S.nuevosEnLinea ? '(' + S.nuevosEnLinea + ') ' : '') + 'Panel · El Taller Repostería';
   tabs.classList.remove('hidden');
 }
@@ -663,7 +692,7 @@ function opcForm(o, paso){
 }
 function vistaPasteles(){
   var base = S.ajustes.pastel_base;
-  var h = '<h2 style="margin-bottom:6px">Pasteles</h2><p style="margin:0 0 14px;color:#5c4f4c">Estas opciones arman el personalizador del sitio. El precio de un pastel = precio base + lo que suma cada opción elegida. Si falta algún precio, el sitio pide cotizar por WhatsApp.</p>';
+  var h = '<h2 style="margin-bottom:6px">Personalizador de pasteles</h2><p style="margin:0 0 14px;color:#5c4f4c">Estas opciones arman el personalizador del sitio. El precio de un pastel = precio base + lo que suma cada opción elegida. Si falta algún precio, el sitio pide cotizar por WhatsApp.</p>';
   h += '<div class="box"><div class="row"><div class="nm"><b>Precio base del pastel</b><small>Se suma siempre</small></div><span class="money">' + (base == null ? 'Sin precio' : fm(base)) + '</span>' +
     '<button class="btn-p btn-s" data-a="abrir" data-k="base">Cambiar</button></div>';
   if(S.abierto === 'base') h += '<div class="inline"><div class="fld"><label for="bPre">Precio base</label><input id="bPre" type="text" inputmode="decimal" value="' + esc(base) + '"></div><div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="baseSave">Guardar</button></div></div>';
@@ -1649,7 +1678,7 @@ function catForm(x, tipo){
     '<div class="acts"><button class="btn-o" data-a="cerrar">Cancelar</button><button class="btn-r" data-a="ctCatGuardar" data-tipo="' + tipo + '"' + (x ? ' data-id="' + x.id + '"' : '') + '>Guardar</button></div></div>';
 }
 function vistaCat(){
-  var h = '<h2 style="margin-bottom:6px">Catálogo</h2>' + aviso('Los pasteles, diseños y especiales que salen en la página de Pasteles. Los bizcochos, rellenos y coberturas del personalizador se cambian en la pestaña Pasteles.');
+  var h = '<h2 style="margin-bottom:6px">Catálogo</h2>' + aviso('Los pasteles, diseños y especiales que salen en la página de Pasteles. Los bizcochos, rellenos y coberturas se cambian en Pasteles → Personalizador.');
   TIPOS.forEach(function(t){
     var xs = S.cCat.filter(function(x){ return x.tipo === t[0]; });
     h += '<div class="box"><h3>' + t[1] + ' <span class="tag">' + xs.length + '</span></h3><div class="in" style="padding-top:6px"><button class="btn-y btn-s" data-a="abrir" data-k="caN:' + t[0] + '">+ Agregar</button></div>';
